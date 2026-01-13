@@ -100,7 +100,7 @@ modeling the uncertainty inherent in each modality.
 \subsubsection{Visual Perception}\label{visual-perception}
 
 The visual module runs at camera frame rate (\(\sim\) 20Hz). We employ
-YOLOv11 {[}@YOLOERealtimeSeeing2025{]} for 2D object detection and
+YOLOv11 \cite{YOLOERealtimeSeeing2025} for 2D object detection and
 segmentation. For each detected bounding box, we compute the 3D centroid
 \(\mathbf{p}_{vis}^{\mathcal{E}}\) in the Ego Frame using depth data.\\
 To account for sensor noise and partial occlusions, we model the
