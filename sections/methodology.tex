@@ -1,14 +1,14 @@
-\section{METHODOLOGY}\label{methodology}
+\section{Methodology}\label{methodology}
 
-\subsection{SYSTEM OVERVIEW \& PROBLEM
-    FORMULATION}\label{system-overview--problem-formulation}
+\subsection{System Overview \& Problem
+    Formulation}\label{system-overview--problem-formulation}
 
-\begin{figure}
+\begin{figure*}
     \centering
     \includegraphics[width=1\linewidth]{figures/savnav-method.png}
-    \caption{Enter Caption}
-    \label{fig:placeholder}
-\end{figure}
+    \caption{SAVNav audio-visual navigation pipeline with perception, SAVMap, and planning components.}
+    \label{fig:savnav-method}
+\end{figure*}
 
 We consider a mobile robot operating in a dynamic, semi-structured
 indoor environment populated by human agents. The robot is equipped with
@@ -29,8 +29,8 @@ two types of entities: Observable Entities (within the
 camera\textquotesingle s Field-of-View, FoV) and Occluded Acoustic
 Sources (Non-Line-of-Sight, NLOS).
 
-\subsection{MULTI-MODAL PERCEPTION WITH
-    UNCERTAINTY}\label{multi-modal-perception-with-uncertainty}
+\subsection{Multi-Modal Perception with
+    Uncertainty}\label{multi-modal-perception-with-uncertainty}
 
 Our perception stack processes visual and auditory streams
 asynchronously to extract semantic and spatial information, explicitly
@@ -77,8 +77,8 @@ the source position as a probability cone
 \(\mathcal{C}_{audio}(\mathbf{x}_t, \mathbf{v}_{doa}, \sigma_{ang})\)
 originating from the robot.
 
-\subsection{SAVMAP: SPATIO-TEMPORAL
-    MAPPING}\label{savmap-spatio-temporal-mapping}
+\subsection{SAVMap: Spatio-Temporal
+    Mapping}\label{savmap-spatio-temporal-mapping}
 
 We introduce SAVMap, a layered grid map (0.05m resolution) that
 integrates static semantics with dynamic audio-visual entities to
@@ -150,8 +150,8 @@ By setting \(\sigma_{long} \gg \sigma_{lat}\), this cost forces the
 planner to take wide turns at corners ("cutting the corner wide"),
 effectively implementing a "Hearing before Seeing" behavior.
 
-\subsection{SAVNAV: SOCIALLY-AWARE
-    PLANNING}\label{savnav-socially-aware-planning}
+\subsection{SAVNav: Socially-Aware
+    Planning}\label{savnav-socially-aware-planning}
 
 To handle the ambiguity of audio data, we design a dual-mode planner
 that switches between Precision Navigation and Active Exploration.
