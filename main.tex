@@ -1,0 +1,259 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{SAVNav: Socially-Aware Audio Visual Navigation\\
+% {\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
+% should not be used}
+\thanks{Identify applicable funding agency here. If none, delete this.}
+}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+% \and
+% \IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+% \textit{name of organization (of Aff.)}\\
+% City, Country \\
+% email address or ORCID}
+% \and
+% \IEEEauthorblockN{3\textsuperscript{rd} Given Name Surname}
+% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+% \textit{name of organization (of Aff.)}\\
+% City, Country \\
+% email address or ORCID}
+% \and
+% \IEEEauthorblockN{4\textsuperscript{th} Given Name Surname}
+% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+% \textit{name of organization (of Aff.)}\\
+% City, Country \\
+% email address or ORCID}
+% \and
+% \IEEEauthorblockN{5\textsuperscript{th} Given Name Surname}
+% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+% \textit{name of organization (of Aff.)}\\
+% City, Country \\
+% email address or ORCID}
+% \and
+% \IEEEauthorblockN{6\textsuperscript{th} Given Name Surname}
+% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+% \textit{name of organization (of Aff.)}\\
+% City, Country \\
+% email address or ORCID}
+}
+
+\maketitle
+
+\begin{abstract}
+This document is a model and instructions for \LaTeX.
+This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
+or Math in Paper Title or Abstract.
+\end{abstract}
+
+\begin{IEEEkeywords}
+component, formatting, style, styling, insert
+\end{IEEEkeywords}
+
+\subsection{SYSTEM OVERVIEW \& PROBLEM
+FORMULATION}\label{system-overview--problem-formulation}
+
+We consider a mobile robot operating in a dynamic, semi-structured
+indoor environment populated by human agents. The robot is equipped with
+an RGB-D camera and a 4-channel microphone array.
+
+Coordinate Systems: We define the World Frame \(\mathcal{W}\) with the
+origin at the scene center and the Ego Frame \(\mathcal{E}\) attached to
+the robot\textquotesingle s geometric center. Let
+\(\mathbf{x}_t = [x, y, z, \psi]^T\) denote the robot\textquotesingle s
+pose in \(\mathcal{W}\) at time \(t\).
+
+Problem Definition: Given a natural language instruction \(\mathcal{I}\)
+(e.g., \emph{"Find the person talking"}), the objective is to generate a
+sequence of control actions \(a_{t} \in \mathcal{A}\) to navigate
+towards the target location \(\mathbf{g}^*\) while minimizing the
+traversal time and ensuring social compliance. This requires handling
+two types of entities: Observable Entities (within the
+camera\textquotesingle s Field-of-View, FoV) and Occluded Acoustic
+Sources (Non-Line-of-Sight, NLOS).
+
+\subsection{MULTI-MODAL PERCEPTION WITH
+UNCERTAINTY}\label{multi-modal-perception-with-uncertainty}
+
+Our perception stack processes visual and auditory streams
+asynchronously to extract semantic and spatial information, explicitly
+modeling the uncertainty inherent in each modality.
+
+\subsubsection{Visual Perception}\label{visual-perception}
+
+The visual module runs at camera frame rate (\(\sim\) 20Hz). We employ
+YOLOv11 {[}@YOLOERealtimeSeeing2025{]} for 2D object detection and
+segmentation. For each detected bounding box, we compute the 3D centroid
+\(\mathbf{p}_{vis}^{\mathcal{E}}\) in the Ego Frame using depth data.\\
+To account for sensor noise and partial occlusions, we model the
+positional uncertainty \(\sigma_{p}\) as:
+
+\[\sigma_{p} = k_d \cdot z^2 + k_{occ} \cdot \left(1 - \frac{N_{mask}}{N_{box}}\right)\]
+
+where \(z\) is the depth, \(k_d\) captures the depth
+sensor\textquotesingle s quadratic error characteristics, and the second
+term penalizes occlusion based on the mask-to-box ratio with coefficient
+\(k_{occ}\). We extract semantic features \(\mathbf{f}_{vis}\) using
+ImageBind {[}@ImageBindOneEmbedding2023{]} and appearance features
+\(\mathbf{f}_{reid}\) for temporal tracking.
+
+\subsubsection{Audio Perception}\label{audio-perception}
+
+The audio module processes 4-channel ambisonic signals in a sliding
+window (5s duration, 0.5s stride). We utilize Embed-ACCDOA
+{[}@OpenvocabularySoundEvent2025{]} for Sound Event Localization and
+Detection (SELD).\\
+For each frame, the model predicts the Direction-of-Arrival (DoA) vector
+\(\mathbf{v}_{doa} \in \mathbb{R}^3\) and a semantic label. The angular
+uncertainty \(\sigma_{ang}\) is dynamically scaled by the detection
+confidence \(c\):
+
+\[\sigma_{ang} = \sigma_{base} \cdot (1 + k_{unc} \cdot (1 - c))\]
+
+where \(\sigma_{base}\) is the empirical error margin of the SELD model.
+Unlike vision, audio lacks direct distance information; thus, we model
+the source position as a probability cone
+\(\mathcal{C}_{audio}(\mathbf{x}_t, \mathbf{v}_{doa}, \sigma_{ang})\)
+originating from the robot.
+
+\subsection{SAVMAP: SPATIO-TEMPORAL
+MAPPING}\label{savmap-spatio-temporal-mapping}
+
+We introduce SAVMap, a layered grid map (0.05m resolution) that
+integrates static semantics with dynamic audio-visual entities to
+support socially-aware navigation.
+
+\subsubsection{Entity Tracking and
+Association}\label{entity-tracking-and-association}
+
+We maintain a list of tracked entities. For visual observations, we
+employ a Hungarian matching algorithm based on a hybrid cost matrix
+\(C_{ij}\):
+
+\[C_{ij} = w_{pos} \cdot \|\mathbf{p}_i - \mathbf{p}_j\| + w_{emb} \cdot (1 - \cos(\mathbf{f}_i, \mathbf{f}_j))\]
+
+For audio observations, we perform cross-modal association. If an audio
+source\textquotesingle s DoA aligns with a visual entity within the
+angular threshold \(\sigma_{ang}\) and shares semantic consistency
+(e.g., "speech" vs. "person"), the audio event is anchored to the visual
+target.
+
+\subsubsection{Topology-Aware Hallucinated
+Momentum}\label{topology-aware-hallucinated-momentum}
+
+A key contribution of our work is handling unanchored audio sources
+(i.e., heard but not seen). To anticipate NLOS risks (e.g., a person
+approaching from around a corner), we propose a Hallucinated Momentum
+Injection mechanism:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Ray-Casting: We project a ray along the unanchored DoA until it
+  intersects with the static map boundaries.
+\item
+  Topological Adsorption: The intersection point is snapped to the
+  nearest topological node (e.g., a doorway or corner), denoted as the
+  hallucinated position \(\mathbf{p}_{hall}\).
+\item
+  Virtual Velocity: We assign a virtual velocity vector
+  \(\mathbf{v}_{virt}\) to this entity, pointing directly towards the
+  robot, simulating a worst-case collision scenario.
+\end{enumerate}
+
+\subsubsection{Social Cost Layer}\label{social-cost-layer}
+
+We construct a unified cost map \(M_{cost}\) to guide the planner.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Visible Humans: For tracked visual entities, we generate a Gaussian
+  cost field. If the human is moving, the Gaussian is anisotropic,
+  elongated along their velocity vector.
+\item
+  NLOS Audio Sources: For hallucinated entities, we generate a
+  Lance-shaped Risk Field aligned with \(\mathbf{v}_{virt}\) to penalize
+  the path directly in front of the hidden source:
+\end{enumerate}
+
+\[J_{audio}(\mathbf{x}) = A \cdot \exp \left( - \left( \frac{d_{long}^2}{2\sigma_{long}^2} + \frac{d_{lat}^2}{2\sigma_{lat}^2} \right) \right)\]
+
+where \(d_{long}\) and \(d_{lat}\) are longitudinal and lateral
+distances to the source in the frame aligned with \(\mathbf{v}_{virt}\).
+By setting \(\sigma_{long} \gg \sigma_{lat}\), this cost forces the
+planner to take wide turns at corners ("cutting the corner wide"),
+effectively implementing a "Hearing before Seeing" behavior.
+
+\subsection{SAVNAV: SOCIALLY-AWARE
+PLANNING}\label{savnav-socially-aware-planning}
+
+To handle the ambiguity of audio data, we design a dual-mode planner
+that switches between Precision Navigation and Active Exploration.
+
+\subsubsection{State Arbitration}\label{state-arbitration}
+
+The system state is determined by the target entity\textquotesingle s
+status:
+
+\begin{itemize}
+\item
+  State A (Precision Nav): Triggered when the target is visually
+  anchored or statically defined (e.g., "Door").
+\item
+  State B (Active Exploration): Triggered when the target is only
+  detected via audio (Unanchored).
+\end{itemize}
+
+\subsubsection{State A: Risk-Aware Path
+Generation}\label{state-a-risk-aware-path-generation}
+
+In this state, the goal \(\mathbf{g}^*\) is deterministic. We employ the
+Fast Marching Method (FMM) to solve the Eikonal equation over the speed
+field \(S(\mathbf{x}) = S_{max} \cdot (1 - M_{cost}(\mathbf{x}))\). The
+gradient descent on the resulting arrival time map \(T(\mathbf{x})\)
+yields a smooth, global path that naturally skirts high-social-cost
+regions.
+
+\subsubsection{State B: Information-Theoretic Active
+Exploration}\label{state-b-information-theoretic-active-exploration}
+
+When the target position is uncertain (audio-only), the robot must
+actively reduce entropy. We define the Region of Interest (ROI)
+\(\Omega_{ROI}\) as the intersection of the audio uncertainty cone
+\(\mathcal{C}_{audio}\) and the navigable space.\\
+We select the Next-Best-View (NBV) pose \(\mathbf{p}_{nbv}\) by
+maximizing an Information-Theoretic Utility function \(U(\mathbf{p})\):
+
+\[U(\mathbf{p}) = \underbrace{\text{Area}(\text{FOV}(\mathbf{p}) \cap \Omega_{ROI} \setminus \mathcal{V}_{hist})}_{\mathcal{I}_{gain}} \cdot \underbrace{\exp(-\lambda \cdot \|\mathbf{x}_t - \mathbf{p} \|)}_{\mathcal{C}_{cost}}\]
+
+where \(\mathcal{I}_{gain}\) represents the expected volumetric
+information gain (unobserved ROI area visible from \(\mathbf{p}\)), and
+\(\mathcal{C}_{cost}\) penalizes travel distance. \(\mathcal{V}_{hist}\)
+tracks previously observed regions to prevent redundant exploration.\\
+Once the robot reaches \(\mathbf{p}_{nbv}\) or the target enters the FoV
+during transit, the system transitions to State A for final approach.
+
+\subsubsection{Reactive Control}\label{reactive-control}
+
+The planned path is executed by a local controller. To ensure safety, an
+Emergency Brake is triggered if the Time-To-Collision (TTC) with any
+dynamic obstacle (visual or hallucinated) drops below 1.0s.
+
+\end{document}
