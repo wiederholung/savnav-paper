@@ -1,58 +1,7 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
-\PassOptionsToPackage{hyphens}{url}
-\documentclass[
-]{article}
-\usepackage{xcolor}
-\usepackage{amsmath,amssymb}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\usepackage{iftex}
-\ifPDFTeX
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-\usepackage{lmodern}
-\ifPDFTeX\else
-  % xetex/luatex font selection
-\fi
-% Use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\usepackage{bookmark}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same}
-\hypersetup{
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
-
-\author{}
-\date{}
-
-\begin{document}
+\section{METHODOLOGY}\label{methodology}
 
 \subsection{SYSTEM OVERVIEW \& PROBLEM
-FORMULATION}\label{system-overview--problem-formulation}
+    FORMULATION}\label{system-overview--problem-formulation}
 
 We consider a mobile robot operating in a dynamic, semi-structured
 indoor environment populated by human agents. The robot is equipped with
@@ -74,7 +23,7 @@ camera\textquotesingle s Field-of-View, FoV) and Occluded Acoustic
 Sources (Non-Line-of-Sight, NLOS).
 
 \subsection{MULTI-MODAL PERCEPTION WITH
-UNCERTAINTY}\label{multi-modal-perception-with-uncertainty}
+    UNCERTAINTY}\label{multi-modal-perception-with-uncertainty}
 
 Our perception stack processes visual and auditory streams
 asynchronously to extract semantic and spatial information, explicitly
@@ -83,33 +32,37 @@ modeling the uncertainty inherent in each modality.
 \subsubsection{Visual Perception}\label{visual-perception}
 
 The visual module runs at camera frame rate (\(\sim\) 20Hz). We employ
-YOLOv11 {[}@YOLOERealtimeSeeing2025{]} for 2D object detection and
+YOLOv11 \cite{YOLOv11OverviewKey2024} for 2D object detection and
 segmentation. For each detected bounding box, we compute the 3D centroid
 \(\mathbf{p}_{vis}^{\mathcal{E}}\) in the Ego Frame using depth data.\\
 To account for sensor noise and partial occlusions, we model the
 positional uncertainty \(\sigma_{p}\) as:
 
-\[\sigma_{p} = k_d \cdot z^2 + k_{occ} \cdot \left(1 - \frac{N_{mask}}{N_{box}}\right)\]
+\begin{equation}
+    \sigma_{p} = k_d \cdot z^2 + k_{occ} \cdot \left(1 - \frac{N_{mask}}{N_{box}}\right)
+\end{equation}
 
 where \(z\) is the depth, \(k_d\) captures the depth
 sensor\textquotesingle s quadratic error characteristics, and the second
 term penalizes occlusion based on the mask-to-box ratio with coefficient
 \(k_{occ}\). We extract semantic features \(\mathbf{f}_{vis}\) using
-ImageBind {[}@ImageBindOneEmbedding2023{]} and appearance features
+ImageBind \cite{ImageBindOneEmbedding2023} and appearance features
 \(\mathbf{f}_{reid}\) for temporal tracking.
 
 \subsubsection{Audio Perception}\label{audio-perception}
 
 The audio module processes 4-channel ambisonic signals in a sliding
 window (5s duration, 0.5s stride). We utilize Embed-ACCDOA
-{[}@OpenvocabularySoundEvent2025{]} for Sound Event Localization and
+\cite{OpenvocabularySoundEvent2025} for Sound Event Localization and
 Detection (SELD).\\
 For each frame, the model predicts the Direction-of-Arrival (DoA) vector
 \(\mathbf{v}_{doa} \in \mathbb{R}^3\) and a semantic label. The angular
 uncertainty \(\sigma_{ang}\) is dynamically scaled by the detection
 confidence \(c\):
 
-\[\sigma_{ang} = \sigma_{base} \cdot (1 + k_{unc} \cdot (1 - c))\]
+\begin{equation}
+    \sigma_{ang} = \sigma_{base} \cdot (1 + k_{unc} \cdot (1 - c))
+\end{equation}
 
 where \(\sigma_{base}\) is the empirical error margin of the SELD model.
 Unlike vision, audio lacks direct distance information; thus, we model
@@ -118,20 +71,22 @@ the source position as a probability cone
 originating from the robot.
 
 \subsection{SAVMAP: SPATIO-TEMPORAL
-MAPPING}\label{savmap-spatio-temporal-mapping}
+    MAPPING}\label{savmap-spatio-temporal-mapping}
 
 We introduce SAVMap, a layered grid map (0.05m resolution) that
 integrates static semantics with dynamic audio-visual entities to
 support socially-aware navigation.
 
 \subsubsection{Entity Tracking and
-Association}\label{entity-tracking-and-association}
+    Association}\label{entity-tracking-and-association}
 
 We maintain a list of tracked entities. For visual observations, we
 employ a Hungarian matching algorithm based on a hybrid cost matrix
 \(C_{ij}\):
 
-\[C_{ij} = w_{pos} \cdot \|\mathbf{p}_i - \mathbf{p}_j\| + w_{emb} \cdot (1 - \cos(\mathbf{f}_i, \mathbf{f}_j))\]
+\begin{equation}
+    C_{ij} = w_{pos} \cdot \|\mathbf{p}_i - \mathbf{p}_j\| + w_{emb} \cdot (1 - \cos(\mathbf{f}_i, \mathbf{f}_j))
+\end{equation}
 
 For audio observations, we perform cross-modal association. If an audio
 source\textquotesingle s DoA aligns with a visual entity within the
@@ -140,7 +95,7 @@ angular threshold \(\sigma_{ang}\) and shares semantic consistency
 target.
 
 \subsubsection{Topology-Aware Hallucinated
-Momentum}\label{topology-aware-hallucinated-momentum}
+    Momentum}\label{topology-aware-hallucinated-momentum}
 
 A key contribution of our work is handling unanchored audio sources
 (i.e., heard but not seen). To anticipate NLOS risks (e.g., a person
@@ -148,18 +103,18 @@ approaching from around a corner), we propose a Hallucinated Momentum
 Injection mechanism:
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  Ray-Casting: We project a ray along the unanchored DoA until it
-  intersects with the static map boundaries.
-\item
-  Topological Adsorption: The intersection point is snapped to the
-  nearest topological node (e.g., a doorway or corner), denoted as the
-  hallucinated position \(\mathbf{p}_{hall}\).
-\item
-  Virtual Velocity: We assign a virtual velocity vector
-  \(\mathbf{v}_{virt}\) to this entity, pointing directly towards the
-  robot, simulating a worst-case collision scenario.
+    \def\labelenumi{\arabic{enumi}.}
+    \item
+          Ray-Casting: We project a ray along the unanchored DoA until it
+          intersects with the static map boundaries.
+    \item
+          Topological Adsorption: The intersection point is snapped to the
+          nearest topological node (e.g., a doorway or corner), denoted as the
+          hallucinated position \(\mathbf{p}_{hall}\).
+    \item
+          Virtual Velocity: We assign a virtual velocity vector
+          \(\mathbf{v}_{virt}\) to this entity, pointing directly towards the
+          robot, simulating a worst-case collision scenario.
 \end{enumerate}
 
 \subsubsection{Social Cost Layer}\label{social-cost-layer}
@@ -167,18 +122,20 @@ Injection mechanism:
 We construct a unified cost map \(M_{cost}\) to guide the planner.
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  Visible Humans: For tracked visual entities, we generate a Gaussian
-  cost field. If the human is moving, the Gaussian is anisotropic,
-  elongated along their velocity vector.
-\item
-  NLOS Audio Sources: For hallucinated entities, we generate a
-  Lance-shaped Risk Field aligned with \(\mathbf{v}_{virt}\) to penalize
-  the path directly in front of the hidden source:
+    \def\labelenumi{\arabic{enumi}.}
+    \item
+          Visible Humans: For tracked visual entities, we generate a Gaussian
+          cost field. If the human is moving, the Gaussian is anisotropic,
+          elongated along their velocity vector.
+    \item
+          NLOS Audio Sources: For hallucinated entities, we generate a
+          Lance-shaped Risk Field aligned with \(\mathbf{v}_{virt}\) to penalize
+          the path directly in front of the hidden source:
 \end{enumerate}
 
-\[J_{audio}(\mathbf{x}) = A \cdot \exp \left( - \left( \frac{d_{long}^2}{2\sigma_{long}^2} + \frac{d_{lat}^2}{2\sigma_{lat}^2} \right) \right)\]
+\begin{equation}
+    J_{audio}(\mathbf{x}) = A \cdot \exp \left( - \left( \frac{d_{long}^2}{2\sigma_{long}^2} + \frac{d_{lat}^2}{2\sigma_{lat}^2} \right) \right)
+\end{equation}
 
 where \(d_{long}\) and \(d_{lat}\) are longitudinal and lateral
 distances to the source in the frame aligned with \(\mathbf{v}_{virt}\).
@@ -187,7 +144,7 @@ planner to take wide turns at corners ("cutting the corner wide"),
 effectively implementing a "Hearing before Seeing" behavior.
 
 \subsection{SAVNAV: SOCIALLY-AWARE
-PLANNING}\label{savnav-socially-aware-planning}
+    PLANNING}\label{savnav-socially-aware-planning}
 
 To handle the ambiguity of audio data, we design a dual-mode planner
 that switches between Precision Navigation and Active Exploration.
@@ -198,16 +155,16 @@ The system state is determined by the target entity\textquotesingle s
 status:
 
 \begin{itemize}
-\item
-  State A (Precision Nav): Triggered when the target is visually
-  anchored or statically defined (e.g., "Door").
-\item
-  State B (Active Exploration): Triggered when the target is only
-  detected via audio (Unanchored).
+    \item
+          State A (Precision Nav): Triggered when the target is visually
+          anchored or statically defined (e.g., "Door").
+    \item
+          State B (Active Exploration): Triggered when the target is only
+          detected via audio (Unanchored).
 \end{itemize}
 
 \subsubsection{State A: Risk-Aware Path
-Generation}\label{state-a-risk-aware-path-generation}
+    Generation}\label{state-a-risk-aware-path-generation}
 
 In this state, the goal \(\mathbf{g}^*\) is deterministic. We employ the
 Fast Marching Method (FMM) to solve the Eikonal equation over the speed
@@ -217,7 +174,7 @@ yields a smooth, global path that naturally skirts high-social-cost
 regions.
 
 \subsubsection{State B: Information-Theoretic Active
-Exploration}\label{state-b-information-theoretic-active-exploration}
+    Exploration}\label{state-b-information-theoretic-active-exploration}
 
 When the target position is uncertain (audio-only), the robot must
 actively reduce entropy. We define the Region of Interest (ROI)
@@ -226,7 +183,9 @@ actively reduce entropy. We define the Region of Interest (ROI)
 We select the Next-Best-View (NBV) pose \(\mathbf{p}_{nbv}\) by
 maximizing an Information-Theoretic Utility function \(U(\mathbf{p})\):
 
-\[U(\mathbf{p}) = \underbrace{\text{Area}(\text{FOV}(\mathbf{p}) \cap \Omega_{ROI} \setminus \mathcal{V}_{hist})}_{\mathcal{I}_{gain}} \cdot \underbrace{\exp(-\lambda \cdot \|\mathbf{x}_t - \mathbf{p} \|)}_{\mathcal{C}_{cost}}\]
+\begin{equation}
+    U(\mathbf{p}) = \underbrace{\text{Area}(\text{FOV}(\mathbf{p}) \cap \Omega_{ROI} \setminus \mathcal{V}_{hist})}_{\mathcal{I}_{gain}} \cdot \underbrace{\exp(-\lambda \cdot \|\mathbf{x}_t - \mathbf{p} \|)}_{\mathcal{C}_{cost}}
+\end{equation}
 
 where \(\mathcal{I}_{gain}\) represents the expected volumetric
 information gain (unobserved ROI area visible from \(\mathbf{p}\)), and
@@ -240,5 +199,3 @@ during transit, the system transitions to State A for final approach.
 The planned path is executed by a local controller. To ensure safety, an
 Emergency Brake is triggered if the Time-To-Collision (TTC) with any
 dynamic obstacle (visual or hallucinated) drops below 1.0s.
-
-\end{document}
