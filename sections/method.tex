@@ -1,4 +1,4 @@
-\section{Methodology}\label{methodology}
+\section{Method}\label{method}
 
 \subsection{System Overview \& Problem
     Formulation}\label{system-overview--problem-formulation}
@@ -47,6 +47,7 @@ positional uncertainty \(\sigma_{p}\) as:
 
 \begin{equation}
     \sigma_{p} = k_d \cdot z^2 + k_{occ} \cdot \left(1 - \frac{N_{mask}}{N_{box}}\right)
+    \label{eq:positional-uncertainty}
 \end{equation}
 where \(z\) is the depth, \(k_d\) captures the depth
 sensor\textquotesingle s quadratic error characteristics, and the second
@@ -68,6 +69,7 @@ confidence \(c\):
 
 \begin{equation}
     \sigma_{ang} = \sigma_{base} \cdot (1 + k_{unc} \cdot (1 - c))
+    \label{eq:angular-uncertainty}
 \end{equation}
 where \(\sigma_{base}\) is the empirical error margin of the SELD model.
 Unlike vision, audio lacks direct distance information; thus, we model
@@ -91,6 +93,7 @@ employ a Hungarian matching algorithm based on a hybrid cost matrix
 
 \begin{equation}
     C_{ij} = w_{pos} \cdot \|\mathbf{p}_i - \mathbf{p}_j\| + w_{emb} \cdot (1 - \cos(\mathbf{f}_i, \mathbf{f}_j))
+    \label{eq:hungarian-cost}
 \end{equation}
 
 For audio observations, we perform cross-modal association. If an audio
@@ -140,6 +143,7 @@ We construct a unified cost map \(M_{cost}\) to guide the planner.
 
 \begin{equation}
     J_{audio}(\mathbf{x}) = A \cdot \exp \left( - \left( \frac{d_{long}^2}{2\sigma_{long}^2} + \frac{d_{lat}^2}{2\sigma_{lat}^2} \right) \right)
+    \label{eq:audio-risk}
 \end{equation}
 where \(d_{long}\) and \(d_{lat}\) are longitudinal and lateral
 distances to the source in the frame aligned with \(\mathbf{v}_{virt}\).
@@ -189,6 +193,7 @@ maximizing an Information-Theoretic Utility function \(U(\mathbf{p})\):
 
 \begin{equation}
     U(\mathbf{p}) = \underbrace{\text{Area}(\text{FOV}(\mathbf{p}) \cap \Omega_{ROI} \setminus \mathcal{V}_{hist})}_{\mathcal{I}_{gain}} \cdot \underbrace{\exp(-\lambda \cdot \|\mathbf{x}_t - \mathbf{p} \|)}_{\mathcal{C}_{cost}}
+    \label{eq:nbv-utility}
 \end{equation}
 where \(\mathcal{I}_{gain}\) represents the expected volumetric
 information gain (unobserved ROI area visible from \(\mathbf{p}\)), and
