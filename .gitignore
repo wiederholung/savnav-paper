@@ -24,6 +24,7 @@
 *.toc
 *.vrb
 *.xdv
+./*.pdf
 
 # Editor specific
 .vscode/
