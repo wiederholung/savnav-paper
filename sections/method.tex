@@ -5,7 +5,7 @@
 
 \begin{figure*}
     \centering
-    \includegraphics[width=1\linewidth]{figures/savnav-method.png}
+    \includegraphics[width=1\linewidth]{figures/savnav-method}
     \caption{SAVNav audio-visual navigation pipeline with perception, SAVMap, and planning components.}
     \label{fig:savnav-method}
 \end{figure*}
@@ -156,7 +156,7 @@ We construct a unified cost map \(M_{cost}\) to guide the planner.
     Planning}\label{savnav-socially-aware-planning}
 
 To handle the ambiguity of audio data, we design a dual-mode planner
-that switches between Precision Navigation and Active Exploration.
+that switches between Precision Navigation and Active Search.
 
 \subsubsection{State Arbitration}\label{state-arbitration}
 
@@ -168,7 +168,7 @@ status:
           State A (Precision Nav): Triggered when the target is visually
           anchored or statically defined (e.g., "Door").
     \item
-          State B (Active Exploration): Triggered when the target is only
+          State B (Active Search): Triggered when the target is only
           detected via audio (Unanchored).
 \end{itemize}
 

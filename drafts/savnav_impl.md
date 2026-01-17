@@ -411,7 +411,7 @@ $$ \mathcal{C}_{cost}(p_i) = \frac{L(\mathbf{p}_{robot}, p_i)}{v_{avg}} + \frac{
 **符号定义**:
 *   $L(\cdot)$: 测地距离 (Geodesic Distance)，即通过 FMM 计算的实际路径长度。
 *   $\Delta \theta$: 需要旋转的角度差。
-*   $\beta$: 调节探索收益与时间成本的权重系数。
+*   $\beta$: 调节搜索收益与时间成本的权重系数。
 
 #### 4. 决策
 
