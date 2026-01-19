@@ -5,7 +5,7 @@
   \centering
 %   \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
    \includegraphics[width=\linewidth]{figures/teaser}
-   \caption{\textbf{Hearing Before Seeing.} Top: A standard vision-based robot fails to anticipate a pedestrian approaching from a blind corner, resulting in a collision or sudden stop. Bottom: Our SAVNav system utilizes acoustic cues to detect the non-line-of-sight (NLOS) footsteps. It generates a ``Hallucinated Cost Field'' (red zone) that extends through the wall, injecting virtual momentum into the planner to execute a smooth, socially compliant wide turn.}
+   \caption{\textbf{SAVNav Overview.} (Left) \textit{Task Scenario:} The robot receives a natural language instruction and navigates to a target (e.g., "Person seeking help") while avoiding humans. Crucially, the system handles Non-Line-of-Sight (NLOS) risks by detecting the acoustic Direction of Arrival (orange cone) of unseen walking humans. This allows the planner to anticipate potential collisions and adjust the path (blue curve) proactively. (Right) \textit{Execution Flow:} Our framework processes instructions and fuses visual observations with uncertainty-aware acoustic perception to build a spatio-temporal map for socially-aware planning.}
    \label{fig:teaser}
 \end{figure}
 
