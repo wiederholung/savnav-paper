@@ -49,8 +49,8 @@ To systematically evaluate the robustness of our system, we categorize navigatio
 \subsubsection{Baselines}
 We compare SAVNav against three representative methods:
 \begin{itemize}
-    \item \textbf{Falcon (Vision SOTA) \cite{falcon}:} A state-of-the-art vision-based social navigation method. To ensure a fair comparison, we augment Falcon with an \textbf{Audio Oracle} that provides the target's coordinates, isolating the specific contribution of audio for dynamic obstacle avoidance.
-    \item \textbf{ENMuS3 (AV-Nav SOTA) \cite{enmus3}:} An end-to-end Reinforcement Learning method for audio-visual navigation using binaural audio.
+    \item \textbf{Falcon (Vision SOTA) \cite{CognitionPrecognitionFutureaware2025}:} A state-of-the-art vision-based social navigation method. To ensure a fair comparison, we augment Falcon with an \textbf{Audio Oracle} that provides the target's coordinates, isolating the specific contribution of audio for dynamic obstacle avoidance.
+    \item \textbf{ENMuS3 (AV-Nav SOTA) \cite{AudiovisualNavigationNoisy2025}:} An end-to-end Reinforcement Learning method for audio-visual navigation using binaural audio.  
     \item \textbf{Standard-AV (Modular Baseline):} A naive ablation of our system that uses the same perception backbone but employs a simple ``Go-to-Sound'' planning logic without Hallucinated Momentum or Active Search.
 \end{itemize}
 
@@ -71,28 +71,29 @@ In addition to standard Success Rate (SR) and Success Weighted by Path Length (S
 \textbf{Difficulty} & \textbf{Method} & \textbf{SR} $\uparrow$ & \textbf{SPL} $\uparrow$ & \textbf{NCR} (Safety) $\downarrow$ & \textbf{PSV} (Social) $\downarrow$ & \textbf{TTFS} (Search) $\downarrow$ \\
 \hline
 \hline
-\textbf{L1: Static} & Falcon* (w/ Oracle) & 0.95 (TBD) & 0.81 (TBD) & 0.01 (TBD) & 0.05 (TBD) & 10.5s (TBD) \\
-(Basic) & ENMuS3 & 0.94 (TBD) & 0.78 (TBD) & 0.02 (TBD) & 0.06 (TBD) & 11.2s (TBD) \\
- & Standard-AV & 0.92 (TBD) & 0.75 (TBD) & 0.02 (TBD) & 0.06 (TBD) & 12.0s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{0.96 (TBD)} & \textbf{0.82 (TBD)} & \textbf{0.01 (TBD)} & \textbf{0.04 (TBD)} & \textbf{10.1s (TBD)} \\
+\textbf{L1: Static} & Falcon* (w/ Oracle) & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+(Basic) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
 \hline
-\textbf{L2: Noise} & Falcon* & 0.93 (TBD) & 0.79 (TBD) & 0.02 (TBD) & 0.06 (TBD) & 11.0s (TBD) \\
-(Distractors) & ENMuS3 & 0.85 (TBD) & 0.65 (TBD) & 0.03 (TBD) & 0.07 (TBD) & 15.4s (TBD) \\
- & Standard-AV & 0.88 (TBD) & 0.62 (TBD) & 0.03 (TBD) & 0.08 (TBD) & 18.5s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{0.95 (TBD)} & \textbf{0.80 (TBD)} & \textbf{0.01 (TBD)} & \textbf{0.05 (TBD)} & \textbf{10.8s (TBD)} \\
+\textbf{L2: Noise} & Falcon* & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+(Distractors) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
 \hline
-\textbf{L3: Dynamic} & Falcon* & 0.75 (TBD) & 0.55 (TBD) & 0.25 (TBD) & 0.30 (TBD) & 20.2s (TBD) \\
-(Footsteps) & ENMuS3 & 0.82 (TBD) & 0.68 (TBD) & 0.12 (TBD) & 0.15 (TBD) & 16.5s (TBD) \\
- & Standard-AV & 0.78 (TBD) & 0.60 (TBD) & 0.18 (TBD) & 0.22 (TBD) & 19.0s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{0.91 (TBD)} & \textbf{0.75 (TBD)} & \textbf{0.04 (TBD)} & \textbf{0.09 (TBD)} & \textbf{12.5s (TBD)} \\
+\textbf{L3: Dynamic} & Falcon* & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+(Footsteps) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
 \hline
-\textbf{L4: Hard} & Falcon* & 0.65 (TBD) & 0.42 (TBD) & 0.35 (TBD) & 0.45 (TBD) & 28.5s (TBD) \\
-(Full Chaos) & ENMuS3 & 0.76 (TBD) & 0.58 (TBD) & 0.15 (TBD) & 0.18 (TBD) & 21.0s (TBD) \\
- & Standard-AV & 0.70 (TBD) & 0.50 (TBD) & 0.22 (TBD) & 0.28 (TBD) & 25.4s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{0.88 (TBD)} & \textbf{0.71 (TBD)} & \textbf{0.05 (TBD)} & \textbf{0.11 (TBD)} & \textbf{14.2s (TBD)} \\
+\textbf{L4: Hard} & Falcon* & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+(Full Chaos) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
+ & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
 \hline
 \end{tabular}
 \end{table*}
+
 
 \subsection{Simulation Results}
 
