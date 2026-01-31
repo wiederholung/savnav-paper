@@ -7,8 +7,7 @@
     \centering
     \includegraphics[width=1\linewidth]{figures/method}
     \caption{\textbf{Overview of the SAVNav pipeline.}
-    
-    }
+    In the Perception Layer, an RGB-D camera performs human detection and 3D localization, while a 4-channel microphone array runs Sound Event Localization and Detection (SELD) to estimate Direction-of-Arrival (DoA) and semantic labels, forming \textit{visual/audio entities} with spatial and semantic attributes. SAVMap (Social-Aware Audio-Visual Mapping) fuses these observations into a layered grid representation: Layer 1 Static Semantic Map, Layer 2 Dynamic Visual Entities, Layer 3 Dynamic Audio Entities, and Layer 4 Social Cost Layer, producing a \textit{Social Costmap} for planning. In the Planning Layer, an MLLM parses the user instruction for query parsing and entity matching to select the best-matching target, and then switches between \textit{Social-Aware Navigation} and \textit{Active Audio-Visual Search} (Search--Then--Go) to disambiguate audio-only cues and mitigate Non-Line-of-Sight (NLOS) risks.}
     
     \label{fig:savnav-method}
 \end{figure*}
