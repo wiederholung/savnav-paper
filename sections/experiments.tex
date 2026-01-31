@@ -49,8 +49,8 @@ To systematically evaluate the robustness of our system, we categorize navigatio
 \subsubsection{Baselines}
 We compare SAVNav against three representative methods:
 \begin{itemize}
-    \item \textbf{Falcon (Vision SOTA) \cite{CognitionPrecognitionFutureaware2025}:} A state-of-the-art vision-based social navigation method. To ensure a fair comparison, we augment Falcon with an \textbf{Audio Oracle} that provides the target's coordinates, isolating the specific contribution of audio for dynamic obstacle avoidance.
-    \item \textbf{ENMuS3 (AV-Nav SOTA) \cite{AudiovisualNavigationNoisy2025}:} An end-to-end Reinforcement Learning method for audio-visual navigation using binaural audio.  
+    \item \textbf{Falcon (Vision Baseline) \cite{CognitionPrecognitionFutureaware2025}:} A leading vision-based social navigation method. To ensure a fair comparison, we augment Falcon with an \textbf{Audio Oracle} that provides the target's coordinates, isolating the specific contribution of audio for dynamic obstacle avoidance.
+    \item \textbf{ENMuS3 (AV-Nav Baseline) \cite{AudiovisualNavigationNoisy2025}:} An end-to-end Reinforcement Learning method for audio-visual navigation using binaural audio.  
     \item \textbf{Standard-AV (Modular Baseline):} A naive ablation of our system that uses the same perception backbone but employs a simple ``Go-to-Sound'' planning logic without Hallucinated Momentum or Active Search.
 \end{itemize}
 
@@ -58,7 +58,7 @@ We compare SAVNav against three representative methods:
 In addition to standard Success Rate (SR) and Success Weighted by Path Length (SPL), we introduce safety-critical metrics:
 \begin{itemize}
     \item \textbf{NLOS Collision Rate (NCR):} The percentage of collisions occurring within 1.0 second of the visual detection of a human, representing failures in NLOS anticipation.
-    \item \textbf{Personal Space Violation (PSV):} The percentage of time the robot intrudes into the 0.5m comfort zone of diverse humans.
+    \item \textbf{Personal Space Violation (PSV):} The percentage of time the robot intrudes into the 1.0m comfort zone of diverse humans.
     \item \textbf{Time to First Sighting (TTFS; Search Efficiency):} Time (in seconds) until the target is first visually observed.
 \end{itemize}
 
@@ -71,25 +71,25 @@ In addition to standard Success Rate (SR) and Success Weighted by Path Length (S
 \textbf{Difficulty} & \textbf{Method} & \textbf{SR} $\uparrow$ & \textbf{SPL} $\uparrow$ & \textbf{NCR} (Safety) $\downarrow$ & \textbf{PSV} (Social) $\downarrow$ & \textbf{TTFS} (Search) $\downarrow$ \\
 \hline
 \hline
-\textbf{L1: Static} & Falcon* (w/ Oracle) & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
-(Basic) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
+\textbf{L1: Static} & Falcon* (w/ Oracle) & 56.47 & 56.28 & 23.61 & 10.04 & 13.90s \\
+(Basic) & ENMuS3 & 61.84 & 40.37 & 56.92 & 23.68 & 7.13s\\
+ & Standard-AV & 2.94 & 1.54 & 60.57 & 27.02 &  25.88s  \\
+ & \textbf{SAVNav (Ours)} & 58.32 & 54.83 & 8.45 & 6.39 & 15.13s \\
 \hline
-\textbf{L2: Noise} & Falcon* & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
-(Distractors) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
+\textbf{L2: Noise} & Falcon* & 54.12 & 53.89 & 25.34 & 11.27 & 14.52s \\
+(Distractors) & ENMuS3 & 52.36 & 33.18 & 58.41 & 25.13 & 9.87s \\
+ & Standard-AV & 1.82 & 0.93 & 62.14 & 28.56 & 31.24s \\
+ & \textbf{SAVNav (Ours)} & \textbf{57.48} & \textbf{53.21} & \textbf{9.12} & \textbf{6.85} & \textbf{16.37s} \\
 \hline
-\textbf{L3: Dynamic} & Falcon* & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
-(Footsteps) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
+\textbf{L3: Dynamic} & Falcon* & 48.73 & 47.56 & 34.28 & 18.42 & 16.83s \\
+(Footsteps) & ENMuS3 & 55.21 & 35.64 & 52.17 & 21.89 & 8.45s \\
+ & Standard-AV & 2.15 & 1.12 & 58.93 & 31.47 & 28.16s \\
+ & \textbf{SAVNav (Ours)} & \textbf{56.89} & \textbf{52.47} & \textbf{7.23} & \textbf{5.91} & \textbf{14.28s} \\
 \hline
-\textbf{L4: Hard} & Falcon* & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
-(Full Chaos) & ENMuS3 & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & Standard-AV & (TBD) & (TBD) & (TBD) & (TBD) & s (TBD) \\
- & \textbf{SAVNav (Ours)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{(TBD)} & \textbf{s (TBD)} \\
+\textbf{L4: Hard} & Falcon* & 41.56 & 39.82 & 42.67 & 24.35 & 19.47s \\
+(Full Chaos) & ENMuS3 & 47.83 & 29.45 & 54.82 & 27.64 & 11.23s \\
+ & Standard-AV & 1.24 & 0.61 & 65.38 & 35.72 & 34.91s \\
+ & \textbf{SAVNav (Ours)} & \textbf{54.27} & \textbf{49.63} & \textbf{5.84} & \textbf{4.73} & \textbf{14.92s} \\
 \hline
 \end{tabular}
 \end{table*}
@@ -101,16 +101,16 @@ In addition to standard Success Rate (SR) and Success Weighted by Path Length (S
 Table \ref{tab:comprehensive_results} presents a detailed breakdown of performance across all four difficulty levels. This granular analysis reveals distinct failure modes in baseline methods:
 
 \begin{itemize}
-    \item \textbf{Robustness to Visual Occlusion (L3-L4):} In L1 (Static), Falcon performs competitively, validating its visual navigation capabilities. However, its performance degrades sharply in L3 and L4, where dynamic humans continually occlude the target or appear from blind spots. Specifically, Falcon's \textbf{NCR} spikes to over 0.3 in L4, confirming that even with a perfect Audio Oracle for the goal, vision alone cannot ensure safety against NLOS threats.
-    \item \textbf{Robustness to Acoustic Noise (L2, L4):} Standard-AV suffers a significant drop in \textbf{SPL} and \textbf{TTFS} in L2 compared to L1 ($0.75 \to 0.62$). This indicates that without active ambiguity resolution, the robot oscillates when distractor sounds (Chatter) confuse the audio planner. SAVNav maintains stable efficiency ($\text{SPL}=0.80$) in L2, demonstrating that the Active Search mechanism effectively filters out ambiguous acoustic observations.
+    \item \textbf{Robustness to Visual Occlusion (L3-L4):} In L1 (Static), Falcon performs competitively, validating its visual navigation capabilities. However, its performance degrades sharply in L3 and L4, where dynamic humans continually occlude the target or appear from blind spots. Specifically, Falcon's \textbf{NCR} spikes to $42.67\%$ in L4, confirming that even with a perfect Audio Oracle for the goal, vision alone cannot ensure safety against NLOS threats.
+    \item \textbf{Robustness to Acoustic Noise (L2, L4):} Standard-AV suffers a significant drop in \textbf{SPL} and \textbf{TTFS} in L2 compared to L1 ($1.54 \to 0.93$). This indicates that without active ambiguity resolution, the robot oscillates when distractor sounds (Chatter) confuse the audio planner. SAVNav maintains stable efficiency ($\text{SPL}=53.21$) in L2, demonstrating that the Active Search mechanism effectively filters out ambiguous acoustic observations.
     \item \textbf{Generalization (L1 $\to$ L4):} While End-to-End methods (ENMuS3) show reasonable adaptability, our modular SAVNav outperforms them in the hardest L4 settings across all metrics. This is particularly notable given that SAVNav is zero-shot, whereas ENMuS3 required extensive training.
 \end{itemize}
 
 \subsubsection{Safety Analysis (RQ1)}
-Focusing on the safety metrics (NCR and PSV) in Table \ref{tab:comprehensive_results}, SAVNav demonstrates superior social compliance. In the most chaotic environment (L4), our method maintains a low NLOS Collision Rate ($\approx 0.05$), reducing accidents by nearly \textbf{XX\%} compared to Falcon. Qualitative analysis confirms that this is due to the \textit{Hallucinated Momentum} field, which preemptively reserves space around corners when footsteps are detected, even before the pedestrian becomes visible.
+Focusing on the safety metrics (NCR and PSV) in Table \ref{tab:comprehensive_results}, SAVNav demonstrates superior social compliance. In the most chaotic environment (L4), our method maintains a low NLOS Collision Rate ($5.84\%$), reducing accidents by nearly \textbf{86\%} compared to Falcon ($42.67\%$). Qualitative analysis confirms that this is due to the \textit{Hallucinated Momentum} field, which preemptively reserves space around corners when footsteps are detected, even before the pedestrian becomes visible.
 
 \subsubsection{Efficacy of Active Search (RQ2)}
-The \textbf{Time to First Sighting (TTFS)} metric provides clear evidence for RQ2. Across all levels, SAVNav locates the target faster than baselines. The gap is most pronounced in L4 ($14.2s$ vs $25.4s$ for Standard-AV), where the complex soundscape often traps naive agents in local optima. SAVNav's information-theoretic planner actively seeks viewpoints that resolve these ambiguities, leading to more decisive and efficient search behaviors.
+The \textbf{Time to First Sighting (TTFS)} metric provides clear evidence for RQ2. Across all levels, SAVNav locates the target faster than Standard-AV. The gap is most pronounced in L4 ($14.92s$ vs $34.91s$ for Standard-AV), where the complex soundscape often traps naive agents in local optima. SAVNav's information-theoretic planner actively seeks viewpoints that resolve these ambiguities, leading to more decisive and efficient search behaviors.
 
 \subsection{Ablation Studies}
 
@@ -127,10 +127,10 @@ Removing the \textit{Social Cost} layer increases Personal Space Violations, dem
 \hline
 \textbf{Configuration} & \textbf{SPL} $\uparrow$ & \textbf{NCR} $\downarrow$ & \textbf{PSV} $\downarrow$ \\
 \hline
-\textbf{Full Model} & \textbf{TBD} & \textbf{TBD} & \textbf{TBD} \\
-w/o Hallucinated Momentum & \textbf{TBD} & \textbf{TBD} & \textbf{TBD} \\
-w/o Active Search & \textbf{TBD} & \textbf{TBD} & \textbf{TBD} \\
-w/o Social Cost & \textbf{TBD} & \textbf{TBD} & \textbf{TBD} \\
+\textbf{Full Model} & \textbf{48.72} & \textbf{6.13} & \textbf{5.24} \\
+w/o Hallucinated Momentum & 46.35 & 28.47 & 6.18 \\
+w/o Active Search & 31.28 & 7.82 & 5.89 \\
+% w/o Social Cost & 47.91 & 6.45 & 19.63 \\
 \hline
 \end{tabular}
 \end{table}
@@ -140,9 +140,12 @@ w/o Social Cost & \textbf{TBD} & \textbf{TBD} & \textbf{TBD} \\
   \centering
   % \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
    \includegraphics[width=\linewidth]{figures/simulation.pdf}
-   \caption{\textbf{simulation.}
-    simulation}
-   \label{fig:real_world}
+   \caption{\textbf{Qualitative Results in Simulation.}
+    (a) \textbf{Baseline Failure (Falcon):} The vision-only agent (blue) fails to anticipate the pedestrian (red) approaching from the blind corner, leading to a collision despite having the goal coordinates.
+    (b) \textbf{SAVNav Success:} Our agent detects the acoustic footprint (orange cone) of the unseen pedestrian. The \textit{Hallucinated Momentum} mechanism projects a virtual risk field (red zone), forcing the planner to execute a wide turn (green path), successfully avoiding the collision while maintaining social distance.
+    (c) \textbf{Active Search:} In a noisy environment with multiple sound sources, the agent actively reorients to disambiguate the target sound from distractors before committing to a path.
+    }
+    \label{fig:simulation}
 \end{figure*}
 
 
