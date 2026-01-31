@@ -137,13 +137,16 @@ w/o Social Cost & \textbf{TBD} & \textbf{TBD} & \textbf{TBD} \\
 
 \subsection{Real-World Experiments}
 
-\begin{figure}[t]
+\begin{figure*}[t]
   \centering
-  \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
-   % \includegraphics[width=\linewidth]{figures/real_world.pdf}
-   \caption{\textbf{Real-World Deployment.} (Left) The Stretch 3 robot navigating an office environment. (Right) The onboard costmap visualization showing the Hallucinated Cost Field anticipating a person around the corner.}
+  % \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+   \includegraphics[width=\linewidth]{figures/real_world.pdf}
+   \caption{\textbf{Real-World Deployment.} 
+   The task is to localize a doorbell sound source (red loudspeaker icon). The scene contains two moving pedestrians. Starting from the initial position, the Stretch robot searches for the target while minimizing human disturbance via social-cost-aware navigation. The blue triangle denotes the Stretch robot’s current pose; the yellow field-of-view (FoV) cone indicates the observable human region within the current view, and pedestrians detected in the FoV are marked as green dots. The pink sector cone represents the sound-source bearing estimated from audio sensing, i.e., the direction-of-arrival (DoA). The red star indicates the currently selected exploration waypoint. The red heatmap visualizes the online-updated social costmap (higher cost in proximity to humans), and the orange curve shows the planned trajectory generated under the current social costmap. Over time, the Stretch robot continuously updates its perception and costmap, repeatedly replans and executes in a closed perception–planning–control loop, until it reaches and localizes the target sound source.
+   From left to right, the four snapshots illustrate the temporal evolution of the decision-making process. In the first snapshot, the Stretch robot hears the doorbell and selects an exploration waypoint; meanwhile, it detects moving pedestrians in the FoV and estimates their motion directions. During planning, the Stretch robot chooses to detour behind the pedestrians to reduce social interference. In the second snapshot, the pedestrians have moved farther away; the social-cost distribution is updated accordingly, and the Stretch robot replans to improve traversal efficiency. In the third snapshot, the Stretch robot perceives footsteps around a corner without direct visual confirmation; the system computes the Acoustic Hallucinated Momentum based on historical motion cues to anticipate potential dynamic obstacles and perform predictive avoidance. In the fourth snapshot, the Stretch robot successfully reaches the sound source and completes the localization task.
+   }
    \label{fig:real_world}
-\end{figure}
+\end{figure*}
 
 To answer \textbf{RQ3}, we deployed SAVNav on a Hello Robot Stretch 3 mobile manipulator equipped with a 4-microphone array and an Intel RealSense D435i camera.
 The system was tested in a real-world office environment ($\approx 100 m^2$) containing glass walls and ambient noise (HVAC, distant traffic).
