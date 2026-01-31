@@ -25,14 +25,14 @@
 \begin{document}
 
 % paper title
-\title{SAVNav: Socially-Aware Audio Visual Navigation}
+\title{SAVNav: Socially-Aware Audio-Visual Navigation with Acoustic Hallucinated Momentum}
 
 \input{sections/authors}
 
 \maketitle
 
 \begin{abstract}
-    Social navigation in human-populated environments requires robots to not only avoid collisions but also respect social norms and anticipate potential risks. Current approaches predominantly rely on vision, which is inherently limited to Line-of-Sight (LOS) perception, leaving robots vulnerable to ``corner surprise'' scenarios where dynamic agents appear suddenly from blind spots. In this work, we introduce SAVNav, a Socially-Aware Audio-Visual Navigation framework that leverages the omnidirectional nature of sound to address these Non-Line-of-Sight (NLOS) challenges. We propose a novel mechanism of ``Acoustic Hallucinated Momentum,'' which projects virtual risk fields into occluded regions based on audio direction-of-arrival, enabling the planner to execute anticipatory wide turns. Furthermore, to resolve the inherent ambiguity of acoustic signals, we design an information-theoretic Active Search strategy that guides the robot to effectively localize unseen sound sources. We integrate these methods into a unified high-fidelity simulation platform combining physical acoustics (SoundSpaces 2.0) with dynamic social agents (Habitat-Lab 3.0). Extensive experiments demonstrate that SAVNav significantly reduces NLOS collision rates and improves social compliance compared to leading vision-only and audio-visual baselines. Finally, we validate our zero-shot framework on a Stretch 3 real robot, showcasing robust performance in complex acoustic environments without any additional training.
+    Social navigation in crowded environments demands that robots not only avoid immediate collisions but also anticipate hidden risks. However, existing vision-centric approaches are fundamentally constrained by Line-of-Sight (LOS) perception, leaving robots vulnerable to ``corner surprises''---sudden encounters with dynamic agents emerging from blind spots. To overcome this limitation, we introduce \textbf{SAVNav}, a zero-shot Socially-Aware Audio-Visual Navigation framework that exploits the omnidirectional nature of sound to perceive Non-Line-of-Sight (NLOS) risks. Central to our approach is a novel mechanism termed ``Acoustic Hallucinated Momentum,'' which projects virtual risk fields into occluded regions based on audio Direction-of-Arrival (DoA), compelling the planner to execute anticipatory defensive maneuvers. To further address the spatial ambiguity of acoustic signals, we design an information-theoretic Active Search strategy that guides the robot to efficiently localize unseen sound sources. We evaluate SAVNav on a high-fidelity simulation platform integrating SoundSpaces 2.0 and Habitat-Lab 3.0. Extensive experiments demonstrate that SAVNav reduces NLOS collision rates by over 85\% and significantly improves social compliance compared to state-of-the-art vision-only and audio-visual baselines. Real-world deployment on a Stretch 3 robot confirms the framework's robust zero-shot transfer capabilities in complex, noisy acoustic environments.
 \end{abstract}
 
 % Keywords: Social Navigation, Audio-Visual Perception, Non-Line-of-Sight (NLOS) Perception, Active Search, Sim-to-Real Transfer

@@ -71,25 +71,25 @@ In addition to standard Success Rate (SR) and Success Weighted by Path Length (S
 \textbf{Difficulty} & \textbf{Method} & \textbf{SR} $\uparrow$ & \textbf{SPL} $\uparrow$ & \textbf{NCR} (Safety) $\downarrow$ & \textbf{PSV} (Social) $\downarrow$ & \textbf{TTFS} (Search) $\downarrow$ \\
 \hline
 \hline
-\textbf{L1: Static} & Falcon* (w/ Oracle) & 56.47 & 56.28 & 23.61 & 10.04 & 13.90s \\
-(Basic) & ENMuS3 & 61.84 & 40.37 & 56.92 & 23.68 & 7.13s\\
+\textbf{L1: Static} & Falcon* (w/ Oracle) & 56.47 & \textbf{56.28} & 23.61 & 10.04 & 13.90s \\
+(Basic) & ENMuS3 & \textbf{61.84} & 40.37 & 56.92 & 23.68 & \textbf{7.13s}\\
  & Standard-AV & 2.94 & 1.54 & 60.57 & 27.02 &  25.88s  \\
- & \textbf{SAVNav (Ours)} & 58.32 & 54.83 & 8.45 & 6.39 & 15.13s \\
+ & \textbf{SAVNav (Ours)} & 58.32 & 54.83 & \textbf{8.45} & \textbf{6.39} & 15.13s \\
 \hline
-\textbf{L2: Noise} & Falcon* & 54.12 & 53.89 & 25.34 & 11.27 & 14.52s \\
-(Distractors) & ENMuS3 & 52.36 & 33.18 & 58.41 & 25.13 & 9.87s \\
+\textbf{L2: Noise} & Falcon* & 54.12 & \textbf{53.89} & 25.34 & 11.27 & 14.52s \\
+(Distractors) & ENMuS3 & 52.36 & 33.18 & 58.41 & 25.13 & \textbf{9.87s} \\
  & Standard-AV & 1.82 & 0.93 & 62.14 & 28.56 & 31.24s \\
- & \textbf{SAVNav (Ours)} & \textbf{57.48} & \textbf{53.21} & \textbf{9.12} & \textbf{6.85} & \textbf{16.37s} \\
+ & \textbf{SAVNav (Ours)} & \textbf{57.48} & 53.21 & \textbf{9.12} & \textbf{6.85} & 16.37s \\
 \hline
 \textbf{L3: Dynamic} & Falcon* & 48.73 & 47.56 & 34.28 & 18.42 & 16.83s \\
-(Footsteps) & ENMuS3 & 55.21 & 35.64 & 52.17 & 21.89 & 8.45s \\
+(Footsteps) & ENMuS3 & 55.21 & 35.64 & 52.17 & 21.89 & \textbf{8.45s} \\
  & Standard-AV & 2.15 & 1.12 & 58.93 & 31.47 & 28.16s \\
- & \textbf{SAVNav (Ours)} & \textbf{56.89} & \textbf{52.47} & \textbf{7.23} & \textbf{5.91} & \textbf{14.28s} \\
+ & \textbf{SAVNav (Ours)} & \textbf{56.89} & \textbf{52.47} & \textbf{7.23} & \textbf{5.91} & 14.28s \\
 \hline
 \textbf{L4: Hard} & Falcon* & 41.56 & 39.82 & 42.67 & 24.35 & 19.47s \\
-(Full Chaos) & ENMuS3 & 47.83 & 29.45 & 54.82 & 27.64 & 11.23s \\
+(Full Chaos) & ENMuS3 & 47.83 & 29.45 & 54.82 & 27.64 & \textbf{11.23s} \\
  & Standard-AV & 1.24 & 0.61 & 65.38 & 35.72 & 34.91s \\
- & \textbf{SAVNav (Ours)} & \textbf{54.27} & \textbf{49.63} & \textbf{5.84} & \textbf{4.73} & \textbf{14.92s} \\
+ & \textbf{SAVNav (Ours)} & \textbf{54.27} & \textbf{49.63} & \textbf{5.84} & \textbf{4.73} & 14.92s \\
 \hline
 \end{tabular}
 \end{table*}
@@ -102,8 +102,8 @@ Table \ref{tab:comprehensive_results} presents a detailed breakdown of performan
 
 \begin{itemize}
     \item \textbf{Robustness to Visual Occlusion (L3-L4):} In L1 (Static), Falcon performs competitively, validating its visual navigation capabilities. However, its performance degrades sharply in L3 and L4, where dynamic humans continually occlude the target or appear from blind spots. Specifically, Falcon's \textbf{NCR} spikes to $42.67\%$ in L4, confirming that even with a perfect Audio Oracle for the goal, vision alone cannot ensure safety against NLOS threats.
-    \item \textbf{Robustness to Acoustic Noise (L2, L4):} Standard-AV suffers a significant drop in \textbf{SPL} and \textbf{TTFS} in L2 compared to L1 ($1.54 \to 0.93$). This indicates that without active ambiguity resolution, the robot oscillates when distractor sounds (Chatter) confuse the audio planner. SAVNav maintains stable efficiency ($\text{SPL}=53.21$) in L2, demonstrating that the Active Search mechanism effectively filters out ambiguous acoustic observations.
-    \item \textbf{Generalization (L1 $\to$ L4):} While End-to-End methods (ENMuS3) show reasonable adaptability, our modular SAVNav outperforms them in the hardest L4 settings across all metrics. This is particularly notable given that SAVNav is zero-shot, whereas ENMuS3 required extensive training.
+    \item \textbf{Robustness to Acoustic Noise (L2, L4):} Standard-AV suffers a significant drop in \textbf{SPL} and \textbf{TTFS} in L2 compared to L1 ($1.54 \to 0.93$). This indicates that without active ambiguity resolution, simple gradient-based audio planning gets trapped in local minima, leading to near-zero success rates. SAVNav maintains stable efficiency ($\text{SPL}=53.21$) in L2, demonstrating that the Active Search mechanism effectively filters out ambiguous acoustic observations.
+    \item \textbf{Efficiency-Safety Trade-off (L4):} It is worth noting that while ENMuS3 achieves the lowest \textbf{TTFS} ($11.23s$), its Success Rate ($47.83\%$) and Safety ($54.82\%$ NCR) are significantly worse than SAVNav. This suggests that the end-to-end policy prioritizes aggressive exploration to locate the sound source quickly, often at the expense of safety. In contrast, SAVNav's Search-Then-Go strategy incurs a slight overhead in search time ($14.92s$) to ensure safe, socially compliant navigation, ultimately yielding a higher success rate.
 \end{itemize}
 
 \subsubsection{Safety Analysis (RQ1)}

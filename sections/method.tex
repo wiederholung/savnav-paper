@@ -137,12 +137,12 @@ We construct a unified cost map \(M_{cost}\) to guide the planner.
           cost field. If the human is moving, the Gaussian is anisotropic,
           elongated along their velocity vector.
     \item
-          Hallucinated Moving Sources: For unanchored sources with dynamic signatures (e.g., footsteps), we generate a Lance-shaped Risk Field aligned with \(\mathbf{v}_{virt}\) to implement "Hearing before Seeing":
+          Hallucinated Moving Sources: For unanchored sources with dynamic signatures (e.g., footsteps), we generate an Anisotropic Risk Field (``Lance-shaped'') aligned with \(\mathbf{v}_{virt}\) to implement ``Hearing before Seeing'':
           \begin{equation}
               J_{move}(\mathbf{x}) = A \cdot \mathbb{I}(d_{long} > 0) \cdot \exp \left( - \left( \frac{d_{long}^2}{2\sigma_{front}^2} + \frac{d_{lat}^2}{2\sigma_{lat}^2} \right) \right)
               \label{eq:audio-risk-move}
           \end{equation}
-          where \(d_{long}, d_{lat}\) are longitudinal and lateral distances. This encourages wide turns around corners.
+          where \(d_{long}, d_{lat}\) are longitudinal and lateral distances in the virtual velocity frame in the virtual velocity frame. This encourages wide turns around corners.
     \item
           Stationary Audio Sources: For static sources (e.g., speech), we employ a Dynamic Probabilistic Cone Field that decays with distance:
           \begin{equation}
