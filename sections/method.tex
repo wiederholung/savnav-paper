@@ -59,7 +59,7 @@ ImageBind \cite{ImageBindOneEmbedding2023} and appearance features
 \subsubsection{Audio Perception}\label{audio-perception}
 
 The audio module processes 4-channel ambisonic signals in a sliding
-window (5s duration, 0.5s stride), ensuring a system latency of \(\sim\)0.5s despite the long temporal context. We utilize Embed-ACCDOA
+window (2.55s duration, 0.5s stride), ensuring a system latency of \(\sim\)0.5s despite the long temporal context. We utilize Embed-ACCDOA
 \cite{OpenvocabularySoundEvent2025} for Sound Event Localization and
 Detection (SELD).
 For each frame, the model predicts the Direction-of-Arrival (DoA) vector
@@ -101,12 +101,12 @@ source DoA aligns with a visual entity within \(\sigma_{ang}\) and shares semant
 (e.g., "speech" vs. "person"), it is \textit{anchored} to the visual target.
 To ensure robustness against occlusion, we employ a \textbf{De-anchoring} mechanism: if an anchored visual entity exits the FoV for a duration \(T_{break}\) (e.g., 2.0s) while the audio signal persists, the entity reverts to an unanchored state, triggering the fallback momentum injection logic.
 
-\subsubsection{Topology-Aware Hallucinated
+\subsubsection{Topology-Aware Acoustic Hallucinated
     Momentum}\label{topology-aware-hallucinated-momentum}
 
 A key contribution of our work is handling unanchored audio sources
 (i.e., heard but not seen). To anticipate NLOS risks (e.g., a person
-approaching from around a corner), we propose a Hallucinated Momentum
+approaching from around a corner), we propose an \textit{Acoustic Hallucinated Momentum}
 Injection mechanism:
 
 \begin{enumerate}
@@ -155,25 +155,21 @@ We construct a unified cost map \(M_{cost}\) to guide the planner.
 \subsection{SAVNav: Socially-Aware
     Planning}\label{savnav-socially-aware-planning}
 
-To handle the ambiguity of audio data, we design a dual-mode planner
-that switches between Precision Navigation and Active Search.
+To handle the ambiguity of audio data, we design a simple closed-loop
+planner that alternates between goal-directed navigation (when the
+target is visually anchored) and belief-driven active search (when the
+target is audio-only and unanchored).
 
-\subsubsection{State Arbitration}\label{state-arbitration}
+\subsubsection{Planning Loop (Search--Then--Go)}\label{sec:planning-loop}
 
-The system state is determined by the target entity\textquotesingle s
-status:
+The planner maintains a binary flag \(\texttt{target\_anchored}\). When
+the target is visually confirmed and anchored, the robot navigates
+towards the anchored goal using risk-aware global planning. Otherwise,
+it actively selects informative viewpoints to reduce uncertainty until
+the target becomes visually confirmed.
 
-\begin{itemize}
-    \item
-          State A (Precision Nav): Triggered when the target is visually
-          anchored or statically defined (e.g., "Door").
-    \item
-          State B (Active Search): Triggered when the target is only
-          detected via audio (Unanchored).
-\end{itemize}
-
-\subsubsection{State A: Risk-Aware Path
-    Generation}\label{state-a-risk-aware-path-generation}
+\subsubsection{Risk-Aware Path
+    Generation (Go-to)}\label{sec:risk-aware-path-generation}
 
 In this state, the goal \(\mathbf{g}^*\) is deterministic. We employ the
 Fast Marching Method (FMM) to solve the Eikonal equation over the speed
@@ -182,9 +178,34 @@ gradient descent on the resulting arrival time map \(T(\mathbf{x})\)
 yields a smooth, global path that naturally skirts high-social-cost
 regions.
 
-\subsubsection{State B: Belief-Driven Active Search}\label{state-b-active-search}
+\subsubsection{Belief-Driven Active Search (Search)}\label{sec:belief-driven-active-search}
 
 When the target is unanchored (audio-only), the robot switches to an active search mode to maximize the Probability of Detection (PoD). We maintain a grid-based Target Belief Map \(\mathcal{M}_{belief}\) initialized with a uniform prior.
+
+\begin{algorithm}[t]
+    \caption{Belief-Driven Active Search (Search--Then--Go)}
+    \label{alg:active-search}
+    \begin{algorithmic}[1]
+        \REQUIRE Cost map \(M_{cost}\); belief map \(\mathcal{M}_{belief}\); audio DoA \(\mathbf{v}_{doa}\) (with \(\sigma_{ang}\)); candidate viewpoints \(\mathcal{P}\)
+        \STATE Initialize \(\texttt{target\_anchored} \leftarrow \text{false}\)
+        \WHILE{task not finished}
+            \STATE Update \(\mathcal{M}_{belief}\) with audio evidence in \(\Omega_{ROI}\)
+            \STATE Apply negative visual update in \(\text{FOV}_{free}\) (no target observed)
+            \IF{consistent visual detection exists}
+                \STATE Anchor target; set \(\texttt{target\_anchored} \leftarrow \text{true}\)
+            \ENDIF
+            \IF{\(\texttt{target\_anchored}\)}
+                \STATE Plan to goal using FMM on \(M_{cost}\); execute
+            \ELSE
+                \FOR{each \(\mathbf{p} \in \mathcal{P}\)}
+                    \STATE Compute utility \(U(\mathbf{p})\) (Eq.~\ref{eq:nbv-utility})
+                \ENDFOR
+                \STATE Select \(\mathbf{p}^* \leftarrow \arg\max_{\mathbf{p} \in \mathcal{P}} U(\mathbf{p})\)
+                \STATE Plan to \(\mathbf{p}^*\) using FMM on \(M_{cost}\); execute
+            \ENDIF
+        \ENDWHILE
+    \end{algorithmic}
+\end{algorithm}
 
 \paragraph{Belief Dynamics} The belief map is updated recursively based on audio-visual observations. Positive audio detections inject probability mass into the uncertainty cone \(\Omega_{ROI}\). Crucially, negative visual observations (seeing empty space) reduce belief in the observed region:
 \begin{equation}
@@ -200,7 +221,7 @@ where \(\lambda_{neg} < 1\) is a forgetting factor for regions within \(\text{FO
     U(\mathbf{p}) = \underbrace{\sum_{c \in \text{FOV}(\mathbf{p})} [\mathcal{M}_{t}(c) \cdot \gamma(\|c-\mathbf{p}\|)]}_{\mathcal{I}_{gain}} - \beta \cdot \mathcal{C}_{travel}(\mathbf{p})
     \label{eq:nbv-utility}
 \end{equation}
-where \(\gamma(d)\) is a resolution decay factor that penalizes distant observations to ensure reliable detection. \(\mathcal{C}_{travel}\) represents the geodesic cost to the candidate pose. Upon visual confirmation, the specific entity is anchored, triggering a transition to State A.
+where \(\gamma(d)\) is a resolution decay factor that penalizes distant observations to ensure reliable detection. \(\mathcal{C}_{travel}\) represents the geodesic cost to the candidate pose. Upon visual confirmation, the specific entity is anchored and the planner proceeds with goal-directed navigation.
 
 \subsubsection{Reactive Control}\label{reactive-control}
 
