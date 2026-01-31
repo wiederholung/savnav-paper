@@ -58,8 +58,8 @@
 
 除了标准的 **成功率 (SR)** 和 **路径加权成功率 (SPL)** 外，我们引入了针对社交安全的特有指标：
 
-- **NLOS Collision Rate (NCR):** 定义为在机器人视觉检测到人类之前的 1.0 秒内发生的碰撞比率。这是衡量“未见其人，先闻其声”能力的金标准。
-- **Personal Space Violation (PSV):** 侵入人类 $0.5m$ 舒适区的平均时长占比。
+- **NLOS Collision Rate (NCR):** 定义为在机器人首次视觉检测到人类之前的 1.0 秒内发生的碰撞比率。这是衡量“未见其人，先闻其声”能力的金标准。
+- **Personal Space Violation (PSV):** 侵入人类 $1.0m$ 舒适区的平均时长占比。
 - **Search Efficiency (SE):** 首次在视觉视野中确认目标所需的时间（Time to First Sighting）。
 
 ## B. 仿真实验结果 (Simulation Results)

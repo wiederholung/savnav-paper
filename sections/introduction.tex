@@ -5,7 +5,7 @@
   \centering
   %   \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
   \includegraphics[width=\linewidth]{figures/teaser}
-  \caption{\textbf{SAVNav Overview.} (Left) \textit{Task Scenario:} The robot receives a natural language instruction and navigates to a target (e.g., "Person seeking help") while avoiding humans. Crucially, the system handles Non-Line-of-Sight (NLOS) risks by detecting the acoustic Direction of Arrival (orange cone) of unseen walking humans. This allows the planner to anticipate potential collisions and adjust the path (blue curve) proactively. (Right) \textit{Execution Flow:} Our framework processes instructions and fuses visual observations with uncertainty-aware acoustic perception to build a spatio-temporal map for socially-aware planning.}
+  \caption{\textbf{SAVNav Overview.} (Left) \textit{Task scenario:} Given an instruction (e.g., \emph{"Find the person calling for help"}), the robot navigates to an audio goal while avoiding humans. Crucially, it anticipates Non-Line-of-Sight (NLOS) risks by using the acoustic Direction-of-Arrival (DoA; orange cone) of unseen moving agents (e.g., footsteps) to proactively adjust its trajectory (blue). (Right) \textit{Execution flow:} Instructions, vision, and uncertainty-aware acoustics are fused into a spatio-temporal map and social costmap for risk-aware planning.}
   \label{fig:teaser}
 \end{figure}
 

@@ -57,7 +57,7 @@ We compare SAVNav against three representative methods:
 \subsubsection{Metrics}
 In addition to standard Success Rate (SR) and Success Weighted by Path Length (SPL), we introduce safety-critical metrics:
 \begin{itemize}
-    \item \textbf{NLOS Collision Rate (NCR):} The percentage of collisions occurring within 1.0 second of the visual detection of a human, representing failures in NLOS anticipation.
+    \item \textbf{NLOS Collision Rate (NCR):} The percentage of collisions occurring within 1.0 second before the robot's first visual detection of a human, representing failures in NLOS anticipation.
     \item \textbf{Personal Space Violation (PSV):} The percentage of time the robot intrudes into the 1.0m comfort zone of diverse humans.
     \item \textbf{Time to First Sighting (TTFS; Search Efficiency):} Time (in seconds) until the target is first visually observed.
 \end{itemize}
@@ -117,7 +117,7 @@ The \textbf{Time to First Sighting (TTFS)} metric provides clear evidence for RQ
 We conduct ablation studies on the Test-Challenge set to verify the contribution of individual components (Table \ref{tab:ablation}).
 Removing \textit{Hallucinated Momentum} leads to a sharp increase in NCR, validating its role in NLOS safety.
 Removing \textit{Active Search} results in lower Success Rates and longer path lengths, as the robot struggles to localize the target.
-Removing the \textit{Social Cost} layer increases Personal Space Violations, demonstrating the necessity of explicit social modeling even when audio cues are present.
+% Removing the \textit{Social Cost} layer increases Personal Space Violations, demonstrating the necessity of explicit social modeling even when audio cues are present.
 
 \begin{table}[b]
 \caption{Ablation Study on Test-Challenge}
@@ -140,11 +140,11 @@ w/o Active Search & 31.28 & 7.82 & 5.89 \\
   \centering
   % \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
    \includegraphics[width=\linewidth]{figures/simulation.pdf}
-   \caption{\textbf{Qualitative Results in Simulation.}
-    (a) \textbf{Baseline Failure (Falcon):} The vision-only agent (blue) fails to anticipate the pedestrian (red) approaching from the blind corner, leading to a collision despite having the goal coordinates.
-    (b) \textbf{SAVNav Success:} Our agent detects the acoustic footprint (orange cone) of the unseen pedestrian. The \textit{Hallucinated Momentum} mechanism projects a virtual risk field (red zone), forcing the planner to execute a wide turn (green path), successfully avoiding the collision while maintaining social distance.
-    (c) \textbf{Active Search:} In a noisy environment with multiple sound sources, the agent actively reorients to disambiguate the target sound from distractors before committing to a path.
-    }
+   \caption{\textbf{Qualitative Results of SAVNav.}
+    SAVNav operating in the same scene at different time steps (Step 1, Step 213, Step 456), highlighting the active search behavior under acoustic ambiguity.
+    For each step, the visualization shows (top to bottom): the dynamic entity layers (visual + audio), the social cost layer, the target belief map, and the resulting global plan.
+    In the belief map, the blue cross indicates the belief centroid, light-blue dots are candidate viewpoints, and the red star is the selected next-best view.
+    In the planning panel, the blue curve is the FMM path computed over static obstacles and the current social costmap.}
     \label{fig:simulation}
 \end{figure*}
 
@@ -156,14 +156,14 @@ w/o Active Search & 31.28 & 7.82 & 5.89 \\
   % \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
    \includegraphics[width=\linewidth]{figures/real_world.pdf}
    \caption{\textbf{Real-World Deployment.} 
-   The task is to localize a doorbell sound source (red loudspeaker icon). The scene contains two moving pedestrians. Starting from the initial position, the Stretch robot searches for the target while minimizing human disturbance via social-cost-aware navigation. The blue triangle denotes the Stretch robot’s current pose; the yellow field-of-view (FoV) cone indicates the observable human region within the current view, and pedestrians detected in the FoV are marked as green dots. The pink sector cone represents the sound-source bearing estimated from audio sensing, i.e., the direction-of-arrival (DoA). The red star indicates the currently selected exploration waypoint. The red heatmap visualizes the online-updated social costmap (higher cost in proximity to humans), and the orange curve shows the planned trajectory generated under the current social costmap. Over time, the Stretch robot continuously updates its perception and costmap, repeatedly replans and executes in a closed perception–planning–control loop, until it reaches and localizes the target sound source.
-   From left to right, the four snapshots illustrate the temporal evolution of the decision-making process. In the first snapshot, the Stretch robot hears the doorbell and selects an exploration waypoint; meanwhile, it detects moving pedestrians in the FoV and estimates their motion directions. During planning, the Stretch robot chooses to detour behind the pedestrians to reduce social interference. In the second snapshot, the pedestrians have moved farther away; the social-cost distribution is updated accordingly, and the Stretch robot replans to improve traversal efficiency. In the third snapshot, the Stretch robot perceives footsteps around a corner without direct visual confirmation; the system computes the Acoustic Hallucinated Momentum based on historical motion cues to anticipate potential dynamic obstacles and perform predictive avoidance. In the fourth snapshot, the Stretch robot successfully reaches the sound source and completes the localization task.
+    Real-world trial on a Stretch 3 robot localizing a doorbell (red loudspeaker icon) in the presence of two moving pedestrians. The blue triangle is the robot pose; the yellow cone is the camera field-of-view (FoV); green dots are detected pedestrians; the pink sector indicates the audio DoA; the red star is the selected exploration waypoint. The red heatmap visualizes the online social costmap, and the orange curve is the planned trajectory.
+    Left to right: (1) the robot hears the doorbell and initiates exploration while tracking pedestrians; (2) the costmap updates as pedestrians move, triggering replanning; (3) unanchored footsteps from around a corner induce topology-aware acoustic hallucinated momentum to reserve space before visual contact; (4) the robot reaches the goal and completes localization.
    }
    \label{fig:real_world}
 \end{figure*}
 
 To answer \textbf{RQ3}, we deployed SAVNav on a Hello Robot Stretch 3 mobile manipulator equipped with a 4-microphone array and an Intel RealSense D435i camera.
-The system was tested in a real-world office environment ($\approx 100 m^2$) containing glass walls and ambient noise (HVAC, distant traffic).
+The system was tested in a real-world office environment ($\approx 60 m^2$) containing glass walls and ambient noise (HVAC, distant traffic).
 Despite the domain gap between simulated and real-world acoustics, the system demonstrated robust zero-shot performance. The robot successfully tracked sound sources and executed anticipatory behaviors at blind corners, maintaining social compliance without any fine-tuning. Figure \ref{fig:real_world} illustrates a representative real-world trial.
 
 \subsection{Summary}
