@@ -1,6 +1,6 @@
 # SAVNav: Socially-Aware Audio Visual Navigation
 
-这是 Robotics: Science and Systems (RSS) 论文 LaTeX 仓库，结构如下：
+这是论文 LaTeX 仓库，结构如下：
 
 - [main.tex](../main.tex)
 - [sections/](../sections/) - 包含论文各个部分的 LaTeX 文件
