@@ -25,7 +25,7 @@
 
 #### Ego Frame → World Frame
 
-给定传感器在世界坐标系下的位置 $\mathbf{t}_{sensor} = [t_x, t_y, t_z]^T$ 和旋转四元数 $q = (w, x, y, z)$：
+给定传感器在世界坐标系下的位置 $\mathbf{t}_{sensor} = [t_x, t_y, t_z]^T$ 和旋转四元数 $q = (w, x, y, z)$（Habitat 使用 **wxyz** 顺序；以下约定 $\mathbf{R}$ 表示将 Ego/Sensor Frame 中的向量主动旋转到 World Frame）：
 
 1. **构建旋转矩阵** $\mathbf{R}$：
    $$ \mathbf{R} = \begin{bmatrix} 1-2(y^2+z^2) & 2(xy-wz) & 2(xz+wy) \\ 2(xy+wz) & 1-2(x^2+z^2) & 2(yz-wx) \\ 2(xz-wy) & 2(yz+wx) & 1-2(x^2+y^2) \end{bmatrix} $$
@@ -46,10 +46,14 @@ $$ x_{ego} = \frac{(u - c_x) \cdot Z}{f_x}, \quad y_{ego} = -\frac{(v - c_y) \cd
 给定 Ego Frame 下的 DoA $(\theta_{azi}, \theta_{ele})$：
 
 1. **Ego Frame 方向向量**：
-   $$ \mathbf{d}_{ego} = [\sin(\theta_{azi}) \cos(\theta_{ele}), \sin(\theta_{ele}), -\cos(\theta_{azi}) \cos(\theta_{ele})]^T $$
+  $$ \mathbf{d}_{ego} = [-\sin(\theta_{azi}) \cos(\theta_{ele}), \sin(\theta_{ele}), -\cos(\theta_{azi}) \cos(\theta_{ele})]^T $$
+
+  该式与 1.2 的角度定义一致：$\theta_{azi}=0$ 指向 $-Z$（前），$\theta_{azi}=+90^\circ$ 指向 $-X$（左）。
 
 2. **World Frame 方向向量**：
    $$ \mathbf{d}_{world} = \mathbf{R} \cdot \mathbf{d}_{ego} $$
+
+> **备注**：若实际代码中的四元数表示 World→Ego 的旋转，则应使用 $\mathbf{R}^{-1}=\mathbf{R}^T$（对单位四元数/正交矩阵成立）。
 
 ## 2. 系统架构 (System Architecture)
 
@@ -283,6 +287,7 @@ class AudioEntity:
     position_estimate: dict           # World Frame 方向锥 {origin, direction, aperture}
     associated_visual_id: Optional[int] # 关联的动态视觉实体 ID (人类)
     associated_static_id: Optional[int] # 关联的静态实体 ID (door/tv_monitor/sink)
+    static_belief: Dict[int, float]   # 静态实体信念得分 {static_entity_id: belief_score}
     position: Optional[np.ndarray]    # 位置 [x, y, z] (若已关联或估算)
     hallucinated_velocity: Optional[np.ndarray] # 虚拟动量 [vx, vy, vz]
     position_uncertainty: Optional[float] # 位置不确定性 (meters)
@@ -315,13 +320,25 @@ position_estimate = {
 
   - **锥体范围检查**：计算实体位置与 DoA 主方向的夹角 $\theta_{dev}$，若 $\theta_{dev} < \text{aperture}/2$ 则认为实体在锥内。
   - **关联逻辑**：若 AudioDetection 的 DoA 指向锥内存在符合条件的实体：
-    - **静态实体匹配**：计算 `audio_embedding` 与 `static_entity.semantic_embedding` 的余弦相似度，阈值 $\tau_{static}$ (e.g., 0.6)。
+    - **静态实体匹配 (Sparse Belief Anchoring)**：
+      引入基于稀疏信念得分的锚定机制，解决单帧 DoA 误差和语义特征噪声导致的“错误锚定”或“频繁闪烁”问题。
+      1. **信念更新 (Belief Update)**：每当接收到新的 `AudioDetection`，遍历所有 `StaticEntity`。
+         - **正向注入**：若实体在方向锥内 ($\theta_{dev} < \text{aperture}/2$)，且语义相似度 $sim = \cos(\text{audio\_emb}, \text{static\_emb}) > \tau_{sim\_min}$ (e.g., 0.4)：
+           $$ S_{belief}(E_i)^{(t)} = S_{belief}(E_i)^{(t-1)} + \alpha_{static} \cdot sim \cdot \exp\left(-\frac{\theta_{dev}^2}{2\sigma_{doa}^2}\right) $$
+           其中 $\alpha_{static}$ 为更新步长，$\sigma_{doa}$ 为 DoA 角度不确定性。
+         - **负向衰减**：对于不在当前 DoA 锥体内，但 `static_belief` 中已有得分的实体：
+           $$ S_{belief}(E_j)^{(t)} = S_{belief}(E_j)^{(t-1)} \cdot \lambda_{static} $$
+           其中 $\lambda_{static} \in (0, 1)$ 为衰减因子 (e.g., 0.8)。
+      2. **锚定状态机 (Anchoring State Machine)**：基于更新后的 `static_belief` 执行带有迟滞机制的锚定决策。
+         - **建立锚定**：若当前未锚定静态实体，且最高得分 $S_{max} > \tau_{anchor}$ (e.g., 2.0)，则锚定至该实体 (`associated_static_id = E_{max}.id`)。
+         - **解除锚定**：若已锚定实体 $E_{anchored}$ 的得分 $S_{belief}(E_{anchored}) < \tau_{deanchor}$ (e.g., 0.5)，则断开锚定。
+         - **目标切换**：若另一实体 $E_b$ 的得分反超已锚定实体 $E_a$，且 $S_{belief}(E_b) > S_{belief}(E_a) + \Delta_{switch}$ (e.g., 1.0)，则平滑切换锚定目标至 $E_b$。
     - **动态人类匹配**：
       - `footstep` → 仅锚定 $\|\mathbf{v}\| \ge v_{thres}$ (e.g., 0.3m/s) 的移动人类。
       - `help` / `chat` → 仅锚定 $\|\mathbf{v}\| < v_{thres}$ 的静止人类。
-    - **去歧义**：若锥内有多个候选实体，选择与 DoA 射线角距离最小 (Nearest Neighbor) 的实体。
+    - **去歧义 (动态人类)**：若锥内有多个候选动态实体，选择与 DoA 射线角距离最小 (Nearest Neighbor) 的实体。
   - **融合操作 (Anchoring)**：将声源 **Anchor** 到匹配实体位置，`position_uncertainty` 继承实体的估计值（静态实体为 0）。
-  - **解锚机制 (De-anchoring)**：引入时效性检查，解锚阈值 $T_{break}$ 应**小于**置信度衰减清理时间：
+  - **解锚机制 (De-anchoring, 仅限动态人类)**：引入时效性检查，解锚阈值 $T_{break}$ 应**小于**置信度衰减清理时间：
     $$ T_{break} = \frac{\ln(C_{init} / T_{thres})}{-\ln(\lambda_{vis})} \cdot \Delta t \cdot 0.8 $$
     例如 $C_{init}=1.0, T_{thres}=0.1, \lambda_{vis}=0.95, \Delta t=0.048s$ 时，$T_{break} \approx 1.76s$。
     若关联的 VisualEntity 超过 $T_{break}$ 未被重新观测到，强制断开锚定。
@@ -548,7 +565,7 @@ $$ \mathcal{C}_{cost}(p_i) = \frac{L(\mathbf{p}_{robot}, p_i)}{v_{avg}} $$
   - 条件: 目标 AudioEntity 的 `is_anchored == False` 且**持续** $T_{lost}$ (e.g., 1.0s)。
   - 计数器: `lost_counter += 1` 每帧；若重新锚定则重置为 0。
   - 触发: `lost_counter * Δt >= T_lost`。
-  - **注意**: 静态实体锚定后不会自动解锚（位置恒定），仅动态人类锚定可能触发 Lost。
+  - **注意**: 静态实体锚定后，其解锚由 `static_belief` 衰减机制控制，动态人类锚定则由上述 Lost 机制触发。
 
 - **A/B → Idle (等待声源)**:
   - 条件: 目标 AudioEntity 的 `confidence < T_{thres}` 被清理。
@@ -625,7 +642,12 @@ $$ \mathcal{C}_{cost}(p_i) = \frac{L(\mathbf{p}_{robot}, p_i)}{v_{avg}} $$
 | 参数 | 符号 | 默认值 | 单位 | 说明 |
 |:---|:---:|:---:|:---:|:---|
 | DoA 匹配角度阈值 | $\theta_{match}$ | 15.0 | ° | 声源关联的最大角度偏差 |
-| 静态实体匹配阈值 | $\tau_{static}$ | 0.6 | - | 音频与静态实体 embedding 余弦相似度阈值 |
+| 静态实体基础相似度阈值 | $\tau_{sim\_min}$ | 0.4 | - | 静态实体信念更新的最低语义相似度 |
+| 静态实体信念更新步长 | $\alpha_{static}$ | 1.0 | - | 静态实体信念正向注入的步长 |
+| 静态实体信念衰减因子 | $\lambda_{static}$ | 0.8 | - | 静态实体信念负向衰减的因子 |
+| 静态实体锚定阈值 | $\tau_{anchor}$ | 2.0 | - | 建立静态实体锚定的信念得分阈值 |
+| 静态实体解锚阈值 | $\tau_{deanchor}$ | 0.5 | - | 解除静态实体锚定的信念得分阈值 |
+| 静态实体切换裕度 | $\Delta_{switch}$ | 1.0 | - | 切换静态实体锚定目标的得分差值 |
 | 速度阈值 | $v_{thres}$ | 0.3 | m/s | 区分静止/移动人类的速度边界 |
 | 虚拟行走速度 | $v_{walk}$ | 1.2 | m/s | NLOS 虚拟动量的速度大小 |
 | 音频衰减因子 | $\lambda_{audio}$ | 0.8 | - | 未匹配时置信度指数衰减率 |

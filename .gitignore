@@ -30,3 +30,8 @@
 .vscode/
 *.sublime-project
 *.sublime-workspace
+
+# Agent
+.claude/
+
+references/
