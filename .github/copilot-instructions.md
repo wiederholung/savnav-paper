@@ -7,6 +7,7 @@
 - [sections/](../sections/) - 包含论文各个部分的 LaTeX 文件
 - [figures/](../figures/) - 包含论文中使用的图像
 - [references.bib](../references.bib) - 包含参考文献
+- [references/tex](../references/tex) - 包含重要参考文献的 LaTeX/Markdown 源码
 
 注意：[outdated/](../drafts/outdated/) 目录下的文件包含过时的内容，严禁参考。
 

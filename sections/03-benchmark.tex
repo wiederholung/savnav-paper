@@ -1,0 +1,85 @@
+\section{Benchmark}
+\label{sec:benchmark}
+
+We introduce a benchmark for \emph{Socially-Aware Audio-Visual Navigation} (SAVNav), in which an embodied agent must navigate to a semantic acoustic target while interpreting ambient human sounds as dynamic social constraints. Unlike conventional audio-visual navigation, which treats sound merely as a goal, and unlike vision-based social navigation, which reasons only about visible humans, SAVNav requires the robot to jointly reason about \emph{task-relevant acoustic targets} and \emph{socially meaningful acoustic boundaries}. 
+
+\subsection{Task Definition and Difficulty Tiers}
+\label{subsec:benchmark-task}
+
+Each episode is defined by an indoor scene, a robot start state, a language query $q$ specifying the acoustic target (chosen from \texttt{doorbell}, \texttt{help}, \texttt{music}, \texttt{water}), and a set of human agents. The robot must navigate to within $1.0\,\mathrm{m}$ of the target source. Crucially, the environment also contains humans who may emit social sounds (\texttt{chat}, \texttt{footstep}), which act as dynamic obstacles or social zones that the robot must not intrude upon.
+
+To rigorously evaluate the agent's capabilities, we factorize the SAVNav task into two orthogonal difficulty axes:
+\begin{itemize}
+    \item \textbf{Acoustic Ambiguity}: Measures the difficulty of localizing the target audio. We discretize this into two levels: \emph{Clear} (high Signal-to-Noise Ratio (SNR), low reverberation $\text{RT}_{60} < 0.3$\,s, target sound dominates) and \emph{Ambiguous} (low SNR, high reverberation $\text{RT}_{60} > 0.6$\,s, presence of acoustic distractors or environmental noise).
+    \item \textbf{Social Risk Visibility}: Measures the observability and dynamism of human obstacles. Human agents can exhibit three states: (1) \emph{Static \& Silent}, (2) \emph{Moving \& Footsteps}, and (3) \emph{Static \& Talking} (e.g., a conversational group). We categorize the risk visibility into \emph{Visible (LOS)}, where the human is within the robot's initial line-of-sight, and \emph{Invisible (NLOS)}, where the human is completely occluded by geometry (e.g., behind a corner or closed door).
+\end{itemize}
+
+By orthogonally combining these two axes, we establish four quantifiable difficulty tiers (T1--T4) that progressively isolate and test specific algorithmic capabilities, as summarized in Table~\ref{tab:benchmark_tiers}.
+
+\begin{table*}[t]
+	\centering
+	\caption{SAVNav Benchmark Difficulty Tiers (T1--T4). The orthogonal design isolates the challenges of acoustic perception (T2) and spatial social reasoning (T3) before combining them into extreme real-world scenarios (T4).}
+	\label{tab:benchmark_tiers}
+	\begin{tabular}{lccll}
+		\toprule
+		Tier & Acoustic Ambiguity & Social Risk Visibility & Human States & Core Challenge \\
+		\midrule
+		\textbf{T1} & \textbf{Clear} & \textbf{LOS} & Static \& Silent & Basic multi-modal fusion and visual obstacle avoidance. \\
+		\textbf{T2} & \textbf{Ambiguous} & \textbf{LOS} & Static/Moving (LOS) & Target sound extraction and localization in noisy environments. \\
+		\textbf{T3} & \textbf{Clear} & \textbf{NLOS} & Moving / Talking (NLOS) & \textbf{Acoustic-to-Spatial Mapping} (hearing blind-corner boundaries). \\
+		\textbf{T4} & \textbf{Ambiguous} & \textbf{NLOS} & Moving / Talking (NLOS) & Uncertainty-aware active exploration and social yielding. \\
+		\bottomrule
+	\end{tabular}
+\end{table*}
+
+\subsection{Simulation and Episode Generation}
+\label{subsec:benchmark-sim}
+
+The benchmark is built upon a high-fidelity simulator that combines multi-agent human behaviors (Habitat 3.0) with physically grounded acoustic rendering (SoundSpaces 2.0). To ensure the episodes accurately reflect the defined difficulty tiers, we enforce strict parametric constraints during episode generation.
+
+\textbf{Acoustic Constraints.} Each episode contains a maximum of 3 active sound sources: 1 target source and up to 2 distractor/social sounds. Note the inherent constraint between our two axes: if an unseen human is moving (State 2) or talking (State 3), their acoustic footprint (\texttt{footstep} or \texttt{chat}) inevitably lowers the SNR of the target audio. In T3/T4, these sounds are essential cues for anticipating NLOS risks, requiring the agent to perform source separation rather than treating them purely as noise.
+
+\textbf{Spatial and Dynamic Constraints.} We restrict each episode to a maximum of 5 human agents. For NLOS configurations (T3 and T4), we use raycast initialization from the robot's starting pose to ensure the humans are strictly visually occluded at the beginning of the episode. Furthermore, for dynamic humans (State 2), we generate their navigation waypoints such that their trajectory explicitly intersects with the robot's shortest geodesic path to the target. This forced-intersection design guarantees that the robot cannot succeed by simply ignoring the human; it must proactively yield or alter its path based on the approaching footstep sounds.
+
+\begin{figure}[t]
+	\centering
+	% TODO: replace with the finalized simulation figure showing the 4 tiers or a specific intersection scenario
+	\includegraphics[width=0.98\linewidth]{figures/simulation.pdf}
+	\caption{Illustration of the simulation environment and episode generation protocol. The benchmark explicitly couples semantic audio targets, multi-agent human trajectories, and precise raycast-verified NLOS conditions.}
+	\label{fig:benchmark_sim}
+\end{figure}
+
+\subsection{Evaluation Metrics}
+\label{subsec:benchmark-metrics}
+
+We evaluate navigation success alongside social compliance using the following metrics:
+
+\begin{itemize}
+    \item \textbf{Success Rate (SR):} The fraction of episodes where the robot stops within $1.0\,\mathrm{m}$ of the target source before the time budget expires.
+    \item \textbf{Success weighted by Path Length (SPL):} Evaluates navigation efficiency relative to the shortest traversable path, penalizing unnecessary detours.
+    \item \textbf{NLOS Collision Rate (NCR):} The fraction of collisions that occur \emph{before} or \emph{within 1 second} of the robot establishing direct visual observation of a human. This explicitly measures the failure to map acoustic cues into spatial awareness at blind corners.
+    \item \textbf{Social Intrusion Time (SIT):} The fraction of episode time the robot spends inside defined social zones (e.g., within $1.5\,\mathrm{m}$ of a conversational group or directly in the path of a moving human). Lower is better.
+\end{itemize}
+
+\subsection{Comparison with Existing Benchmarks}
+\label{subsec:benchmark-compare}
+
+Table~\ref{tab:benchmark_comparison} positions SAVNav against existing embodied AI paradigms. Standard Audio-Visual (AV) navigation (e.g., AudioGoal) evaluates finding a sound but ignores the social semantics of human-generated audio. Conversely, vision-based Social Navigation evaluates behavior around humans but assumes line-of-sight visibility. SAVNav bridges this gap. The agent is evaluated not merely on reaching a destination, but on its ability to \emph{hear social boundaries}---using audio to anticipate and respect human activities even when they are fully occluded.
+
+\begin{table}[h]
+	\centering
+	\caption{Comparison of SAVNav with representative embodied navigation tasks. SAVNav uniquely requires semantic audio targeting combined with NLOS social compliance.}
+	\label{tab:benchmark_comparison}
+	\resizebox{\linewidth}{!}{
+	\begin{tabular}{lcccccc}
+		\toprule
+		Task & Goal Modality & Human Dynamics & Social Compliance & Spatial Audio & NLOS Social Risk & Semantic Targets \\
+		\midrule
+		ObjectNav & Vision & No & No & No & No & No \\
+		SocialNav & Vision & Yes & Yes & No & No & No \\
+		AudioGoal & Audio-Visual & No & No & Yes & No & Partial \\
+		\textbf{SAVNav (Ours)} & \textbf{Audio-Visual} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} \\
+		\bottomrule
+	\end{tabular}
+	}
+\end{table}
