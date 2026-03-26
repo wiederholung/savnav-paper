@@ -1,37 +1,41 @@
 ---
-description: "Use when writing or editing LaTeX paper files, defining methodology, or introducing new technical concepts. Enforces strict terminology and glossary syncing."
-applyTo: "**/*.tex, drafts/**/*.md"
+description: "Use when writing or editing SAVNav terminology, method text, or drafts. Covers naming consistency, glossary sync, and banned variants such as acoustic target, SAVMap, and NLOS."
+applyTo: "**/*.tex, drafts/*.md"
 ---
 
-# Terminology & Glossary Workflow
+# Terminology Rules
 
-在撰写和修改 LaTeX 章节或起草方法时，必须严格遵守术语规范，绝不可为求词汇丰富而随意变换学术专有名词。
+Version: 1.0.0
 
-## 1. 强制对齐唯一术语表 (Strict Consistency)
+本文件只约束**概念命名与消歧**。`drafts/glossary.md` 是术语条目与符号条目的唯一登记处；本文件不重复维护术语表。
 
-- **唯一事实来源**：动笔撰写 `**/*.tex` 之前，必须查阅 `drafts/glossary.md`。
-- **一词一义 (One Concept, One Term)**：禁止在同篇论文中用不同词汇指代同一概念。
-  - _反面示例_：随意混用 `target source`, `target audio`, `semantic target`。
-  - _正确规范_：统一使用 `acoustic target`。
+## 1. Single Source of Truth
 
-## 2. 新概念命名的四大原则 (Principles for Naming)
+- 写作前先对齐 `drafts/glossary.md`。
+- 同一概念全篇只保留一个主术语，不为同一对象制造近义替换。
+- 若新增术语、缩写或符号，先补充 `drafts/glossary.md`，再在正文中使用。
 
-为新增模块、变量或逻辑命名时，遵循以下准则：
+## 2. Core Naming Decisions
 
-- **正交且具象的前缀修饰 (Orthogonal Modifiers)**
-  - 弃用笼统/口语化词汇，使用严谨的物理/状态前缀。
-  - _示例_：将泛泛的 `unseen human` 改为精准的 `NLOS dynamic pedestrian`。
-- **杜绝变量重载 (No Variable Overloading)**
-  - 相同的核心词干严禁用于表达不同的数学概念。
-  - _反面示例_：将映射置信度 $S_{belief}$ 和地图概率分布 $\mathcal{M}_{belief}$ 都称为“Belief”。
-  - _正确规范_：分离为 `anchoring confidence` 和 `target spatial belief`。
-- **精确优于简短 (Precision Over Brevity)**
-  - 术语必须直观反映内在机制，避免宽泛词汇（如用 `success rate` 替代笼统的 `performance`）。
-- **规避学术雷区与负面词汇 (Avoid Taboos & Negative Buzzwords)**
-  - 禁用带有负面技术偏见或严重歧义的词汇。
-  - _反面示例_：使用 `hallucination / hallucinated momentum` 指代盲区行人推测。在当前语境下，"hallucination (幻觉)" 专指 AI 的致命编造缺陷，严重有损方法的严谨性。
-  - _正确规范_：更正为 `topology-aware acoustic anticipation / inferred entities`。
+- `SAVNav`：整个方法/系统。
+- `the SAVNav task`：论文定义的任务或 benchmark。
+- `SAVNav policy`：规划与决策模块。
+- `SAVMap`：`acoustic-to-spatial social mapping` 模块。
 
-## 3. 术语池同步维护 (Synchronous Maintenance)
+## 3. Preferred and Banned Variants
 
-- 新增术语并写入正文后，**必须立即**将其英文原名、中文解释及 LaTeX 数学符号更新至 `drafts/glossary.md`，确保全局一致。
+- 目标发声对象统一写 `acoustic target`，不要改写成 `target source`、`target audio`、`semantic target` 等。
+- 对视距外风险统一使用 `NLOS`、`inferred entity`、`topology-aware acoustic anticipation` 这组表述。
+- 不使用 `hallucination`、`hallucinated` 描述推断出的实体、速度或风险。
+- 不用宽泛词替代已定义术语，如用 `dynamic pedestrian` 代替 `unseen human`、`moving person` 之类临时说法。
+
+## 4. Naming Principles for New Concepts
+
+- 名称应优先表达物理属性、感知来源或功能角色，避免空泛修辞。
+- 若两个概念功能不同，则名称词干也应不同，避免一词多义。
+- 论文正文中的模块名、机制名、地图名、代价场名应与 glossary 条目完全一致。
+
+## 5. Synchronization Rule
+
+- 当术语、缩写、符号、中文释义发生变化时，只在 `drafts/glossary.md` 维护主记录。
+- `style.instructions.md` 负责写法，`terminology.instructions.md` 负责命名原则，`drafts/glossary.md` 负责词条内容。
