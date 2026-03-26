@@ -1,32 +1,32 @@
 \section{Benchmark}
 \label{sec:benchmark}
 
-We introduce a benchmark for the SAVNav task, in which an embodied agent must navigate to an acoustic target while interpreting social acoustic events as dynamic social boundaries. Unlike conventional audio-visual navigation, which treats sound merely as a goal, and unlike vision-based social navigation, which reasons only about visible humans, the SAVNav task requires the robot to jointly reason about task-relevant acoustic targets and dynamic social boundaries. 
+We introduce a benchmark for the SAVNav task, in which an embodied agent must navigate to an acoustic target while interpreting social acoustic events as dynamic social boundaries. Unlike conventional audio-visual navigation, which treats sound primarily as a goal, and unlike vision-based social navigation, which reasons only about visible humans, the SAVNav task requires the robot to jointly reason about acoustic targets and dynamic social boundaries.
 
 \subsection{Task Definition and Scenario Families}
 \label{subsec:benchmark-task}
 
 Each episode is defined by an indoor scene, a robot start state, a language query $q$ specifying the acoustic target (chosen from \texttt{doorbell}, \texttt{calling}, \texttt{music}, or \texttt{running water}, where \texttt{calling} represents a person verbally summoning the robot), and a set of human agents. The robot must navigate to the acoustic target. Crucially, the environment also contains humans who may emit social acoustic events (\texttt{chat}, \texttt{footstep}), which act as dynamic social boundaries that the robot must not intrude upon.
 
-To rigorously evaluate the agent's capabilities across different physical and social contexts, we structure the benchmark into three distinct \emph{Scenario Families}. Rather than relying on abstract difficulty grids, this taxonomy evaluates the robot's navigation and social compliance against realistic spatial challenges:
+To evaluate the agent across different physical and social contexts, we structure the benchmark into three Scenario Families. This taxonomy separates visible social routing from NLOS acoustic anticipation while still covering mixed domestic settings:
 
 \begin{enumerate}
-    \item \textit{Scene A, Crowded Social Scene:} A high-density, fully visible environment containing 3--5 humans. It features at least one stationary conversational group (SCG) and dynamic pedestrians (DPs). The core challenge is navigating through tight, socially dense spaces without interrupting conversations or violating personal space.
-    \item \textit{Scene B, Hidden Boundary Scene:} Focuses on NLOS social risks. The scene contains a primary hidden actor completely occluded by geometry (e.g., around a blind corner or behind a door). It includes two variants: B1 (Hidden SCG) testing the avoidance of NLOS SCGs, and B2 (Hidden DP) testing early yielding to approaching pedestrians before visual contact. The core challenge is acoustic-to-spatial mapping (hearing before seeing).
-    \item \textit{Scene C, Mixed Home Activity:} A generalized, everyday domestic scenario featuring 2--3 humans with a mix of visible and invisible actors (e.g., one person visible in the living room, another walking in a hidden hallway). This ensures the benchmark evaluates robust, general-purpose navigation rather than merely overfitting to isolated stress tests.
+	\item \textit{Scene A, Crowded Social Scene:} A high-density, fully visible environment containing 3--5 humans. It includes at least one stationary conversational group (SCG) and dynamic pedestrians (DPs). The main requirement is to navigate through socially dense spaces without interrupting conversations or violating personal space.
+	\item \textit{Scene B, Hidden Boundary Scene:} A setting focused on NLOS social risks. The scene contains a hidden actor occluded by geometry, such as around a blind corner or behind a door. It includes B1 (Hidden SCG), which tests avoidance of NLOS SCGs, and B2 (Hidden DP), which tests early yielding to approaching pedestrians before visual contact.
+	\item \textit{Scene C, Mixed Home Activity:} A domestic scenario with 2--3 humans and a mix of visible and invisible actors, such as one person in the living room and another walking in a hidden hallway. This family checks whether the benchmark handles mixed social and acoustic conditions.
 \end{enumerate}
 
 \begin{table*}[t]
 	\centering
-	\caption{SAVNav Benchmark Scenario Families. The taxonomy explicitly isolates the challenges of visible social routing (Scene A) and NLOS acoustic anticipation (Scene B), while ensuring generalizability in composite environments (Scene C).}
+	\caption{SAVNav benchmark scenario families. The taxonomy separates visible social routing (Scene A), NLOS acoustic anticipation (Scene B), and mixed domestic settings (Scene C).}
 	\label{tab:benchmark_tiers}
 	\begin{tabular}{lccll}
 		\toprule
-		Scenario Family & Human Count & Human Visibility & Social Composition & Core Challenge \\
+		Scenario Family                    & Human Count & Human Visibility & Social Composition      & Core Challenge                                        \\
 		\midrule
-		\textbf{Scene A} (Crowded Social) & 3--5 & Visible & Mixed (SCG \& DPs) & Social routing and yielding in visually dense spaces. \\
-		\textbf{Scene B} (Hidden Boundary)& 1--2 & NLOS    & Single (SCG or DP) & Hearing before seeing. \\
-		\textbf{Scene C} (Mixed Home)     & 2--3 & Mixed   & Mixed (Visible \& NLOS) & Robust multi-modal attention and generalizability. \\
+		\textbf{Scene A} (Crowded Social)  & 3--5        & Visible          & Mixed (SCG \& DPs)      & Social routing and yielding in visually dense spaces. \\
+		\textbf{Scene B} (Hidden Boundary) & 1--2        & NLOS             & Single (SCG or DP)      & Hearing before seeing.                                \\
+		\textbf{Scene C} (Mixed Home)      & 2--3        & Mixed            & Mixed (Visible \& NLOS) & Robust multi-modal attention and generalizability.    \\
 		\bottomrule
 	\end{tabular}
 \end{table*}
@@ -34,18 +34,19 @@ To rigorously evaluate the agent's capabilities across different physical and so
 \subsection{Simulation and Episode Generation}
 \label{subsec:benchmark-sim}
 
-The benchmark is built upon a high-fidelity simulator that integrates multi-agent human behaviors (Habitat 3.0) with physically grounded acoustic rendering (SoundSpaces 2.0). To ensure diverse and realistic interactions, we utilize large-scale indoor environments from the Matterport3D (MP3D) dataset. Episodes are strictly restricted to single-floor layouts with a limited number of interconnected regions ($\le 10$ rooms) to prevent ambiguous vertical sound propagation and unbounded exploration. Each episode allows a maximum of 600 time steps. We specifically select 10 diverse scenes to generate the evaluation dataset, comprising approximately 1,000 episodes distributed evenly across the three scenario families (Scenes A, B, and C).
+The benchmark is built upon a high-fidelity simulator that integrates multi-agent human behaviors (Habitat 3.0) with physically grounded acoustic rendering (SoundSpaces 2.0). To ensure diverse and realistic interactions, we utilize large-scale indoor environments from the Matterport3D dataset. Episodes are strictly restricted to single-floor layouts with a limited number of interconnected regions ($\le 10$ rooms) to prevent ambiguous vertical sound propagation and unbounded exploration. Each episode allows a maximum of 600 time steps. We specifically select 10 diverse scenes to generate the evaluation dataset, comprising approximately 1,000 episodes distributed evenly across the three scenario families (Scenes A, B, and C).
 
 To ensure episodes accurately reflect the scenario families, we enforce strict parametric settings during generation.
 
-\textbf{Acoustic Configurations.} Each episode contains a maximum of 3 active sound sources: 1 acoustic target and up to 2 distractor social acoustic events. For Scenes B and C, the presence of social acoustic events (\texttt{footstep} or \texttt{chat}) inevitably creates a complex acoustic mixture with the acoustic target. The agent must perform source separation rather than treating these social cues purely as noise.
+\subsubsection{Acoustic Configurations}
+Each episode contains a maximum of 3 active sound sources: 1 acoustic target and up to 2 distractor social acoustic events. For Scenes B and C, the presence of social acoustic events (\texttt{footstep} or \texttt{chat}) inevitably creates a complex acoustic mixture with the acoustic target. The agent must perform source separation rather than treating these social cues purely as noise.
 
-\textbf{Spatial and Dynamic Settings.} For Scene A, humans are spawned within the main topological pathways to force spatial negotiation. For Scene B (NLOS), we use raycast initialization from the robot's starting pose to ensure the humans are strictly visually occluded. Furthermore, for DPs, we generate navigation waypoints such that their trajectory explicitly intersects with the robot's shortest geodesic path to the target. This forced-intersection design guarantees that the robot cannot succeed by simply ignoring the human; it must proactively yield or alter its path based on approaching footsteps.
+\subsubsection{Spatial and Dynamic Settings}
+For Scene A, humans are spawned within the main topological pathways to force spatial negotiation. For Scene B (NLOS), we use raycast initialization from the robot's starting pose to ensure the humans are strictly visually occluded. Furthermore, for DPs, we generate navigation waypoints such that their trajectory explicitly intersects with the robot's shortest geodesic path to the target. This forced-intersection design guarantees that the robot cannot succeed by simply ignoring the human; it must proactively yield or alter its path based on approaching footsteps.
 
 \begin{figure}[t]
 	\centering
-	% TODO: replace with the finalized simulation figure showing the 3 scenes
-	\includegraphics[width=0.98\linewidth]{figures/simulation.pdf}
+	\includegraphics[width=1.00\linewidth]{figures/simulation.pdf}
 	\caption{Illustration of the simulation environment and episode generation protocol. The benchmark explicitly couples acoustic targets, multi-agent human trajectories, and precise raycast-verified NLOS conditions.}
 	\label{fig:benchmark_sim}
 \end{figure}
@@ -55,41 +56,41 @@ To ensure episodes accurately reflect the scenario families, we enforce strict p
 
 We evaluate the navigation system across three dimensions: task completion, human safety, and social compliance. Notably, reaching the target does not inherently imply safety, necessitating distinct social metrics.
 
-\textbf{1. Task Completion:}
 \begin{enumerate}
-    \item \textit{Success Rate (SR):} An episode is strictly defined as a success if the agent executes the \texttt{STOP} action within the maximum allowable time steps ($T_{max}=600$) and its final distance to the acoustic target is $\le 1.0\,\mathrm{m}$. Collisions do not terminate the episode, which effectively isolates navigation capability from safety.
-    \item \textit{Success Weighted by Path Length (SPL):} Evaluates navigation efficiency relative to the shortest traversable path, penalizing unnecessary detours.
-\end{enumerate}
-
-\textbf{2. Human Safety:}
-\begin{enumerate}
-    \item \textit{Human Collision Rate (HCR):} The fraction of episodes where the robot collides with a human agent. This isolates critical human-robot collisions from minor static environmental bumps.
-    \item \textit{NLOS Collision Rate (NCR):} The fraction of human collisions that occur before or within $1.0\,\mathrm{s}$ of the robot establishing direct visual observation of the human. This explicitly measures the failure to map acoustic cues into spatial awareness at blind corners.
-\end{enumerate}
-
-\textbf{3. Social Compliance:}
-\begin{enumerate}
-    \item \textit{Personal Space Violation (PSV):} The rate at which the robot breaches the social comfort zone of any human. This unified metric applies to both moving humans ($0.8\,\mathrm{m}$ dynamic proxemics) and SCGs ($1.2\,\mathrm{m}$ static interaction zones), capturing the total duration of social intrusions relative to the episode length.
+	\item \textit{Task Completion:}
+	      \begin{enumerate}
+		      \item \textit{Success Rate (SR):} An episode is counted as a success if the agent executes the \texttt{STOP} action within the maximum allowable time steps ($T_{max}=600$) and its final distance to the acoustic target is $\le 1.0\,\mathrm{m}$. Collisions do not terminate the episode.
+		      \item \textit{Success Weighted by Path Length (SPL):} Measures navigation efficiency relative to the shortest traversable path and penalizes unnecessary detours.
+	      \end{enumerate}
+	\item \textit{Human Safety:}
+	      \begin{enumerate}
+		      \item \textit{Human Collision Rate (HCR):} The fraction of episodes in which the robot collides with a human agent.
+		      \item \textit{NLOS Collision Rate (NCR):} The fraction of human collisions that occur before or within $1.0\,\mathrm{s}$ of the robot establishing direct visual observation of the human. This measures failures in mapping acoustic cues into spatial awareness at blind corners.
+	      \end{enumerate}
+	\item \textit{Social Compliance:}
+	      \begin{enumerate}
+		      \item \textit{Personal Space Violation (PSV):} The rate at which the robot breaches the social comfort zone of any human. This metric applies to moving humans ($0.8\,\mathrm{m}$ dynamic proxemics) and SCGs ($1.2\,\mathrm{m}$ static interaction zones), and captures the total duration of social intrusions relative to episode length.
+	      \end{enumerate}
 \end{enumerate}
 
 \subsection{Comparison with Existing Benchmarks}
 \label{subsec:benchmark-compare}
 
-Table~\ref{tab:benchmark_comparison} positions the SAVNav task against existing embodied AI paradigms. Standard Audio-Visual (AV) navigation evaluates finding a sound but ignores the social semantics of social acoustic events. Conversely, vision-based Social Navigation evaluates behavior around humans but assumes line-of-sight visibility. Moreover, emergency detection benchmarks like HomeEmergency evaluate audio-based exploration but lack explicit social compliance with active human dynamics. The SAVNav task bridges this gap. The agent is evaluated not merely on reaching a destination, but on its ability to hear social boundaries---using audio to anticipate and respect human activities even when they are fully occluded.
+Table~\ref{tab:benchmark_comparison} positions the SAVNav task against representative embodied navigation tasks. Standard audio-visual navigation evaluates sound finding but does not model the social semantics of social acoustic events. Vision-based social navigation evaluates behavior around humans but assumes line-of-sight visibility. Emergency detection benchmarks such as HomeEmergency support audio-based exploration but do not include explicit social compliance with active human dynamics. The SAVNav task combines these requirements by asking the agent to use audio to anticipate and respect human activities even when they are fully occluded.
 
 \begin{table*}[t]
 	\centering
-	\caption{Comparison of the SAVNav task with representative embodied navigation tasks. The SAVNav task uniquely requires semantic acoustic targets combined with NLOS social compliance.}
+	\caption{Comparison of the SAVNav task with representative embodied navigation tasks. The SAVNav task requires semantic acoustic targets together with NLOS social compliance.}
 	\label{tab:benchmark_comparison}
 	\begin{tabular}{lcccccc}
 		\toprule
-		Task & Goal Modality & Human Dynamics & Social Compliance & Spatial Audio & NLOS Social Risk & Acoustic Target \\
+		Task                                                  & Goal Modality         & Human Dynamics & Social Compliance & Spatial Audio & NLOS Social Risk & Acoustic Target \\
 		\midrule
-		ObjectNav & Vision & No & No & No & No & No \\
-		SocialNav~\cite{CognitionPrecognitionFutureaware2025} & Vision & Yes & Yes & No & No & No \\
-		AudioGoal~\cite{AudiovisualNavigationNoisy2025} & Audio-Visual & No & No & Yes & No & Partial \\
-		HomeEmergency~\cite{HomeEmergencyUsingAudio2025} & Audio-Visual & No & No & Yes & No & Yes \\
-		\textbf{SAVNav task (Ours)} & \textbf{Audio-Visual} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} \\
+		ObjectNav                                             & Vision                & No             & No                & No            & No               & No              \\
+		SocialNav~\cite{CognitionPrecognitionFutureaware2025} & Vision                & Yes            & Yes               & No            & No               & No              \\
+		AudioGoal~\cite{AudiovisualNavigationNoisy2025}       & Audio-Visual          & No             & No                & Yes           & No               & Partial         \\
+		HomeEmergency~\cite{HomeEmergencyUsingAudio2025}      & Audio-Visual          & No             & No                & Yes           & No               & Yes             \\
+		\textbf{SAVNav task (Ours)}                           & \textbf{Audio-Visual} & \textbf{Yes}   & \textbf{Yes}      & \textbf{Yes}  & \textbf{Yes}     & \textbf{Yes}    \\
 		\bottomrule
 	\end{tabular}
 \end{table*}
