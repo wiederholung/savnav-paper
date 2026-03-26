@@ -3,6 +3,41 @@
 
 To navigate complex, dynamic human environments, a robot must transcend treating sound as mere geometric goals. Our proposed system, Socially-Aware Audio-Visual Navigation (SAVNav), achieves this by processing ambient audio as persistent spatial social constraints. The architecture consists of three tightly coupled modules: Multi-Modal Perception, Acoustic-to-Spatial Social Mapping (\textit{SAVMap}), and Proactive Socially-Aware Navigation (\textit{SAVNav Policy}).
 
+\subsection{Problem Formulation and Notation}
+\label{subsec:problem_formulation}
+
+We formalize the Socially-Aware Audio-Visual Navigation problem in a continuous 3D environment populated by dynamic human agents. Let $\mathcal{E}$ represent the environment, which contains a set of static obstacles $\mathcal{O}_{static}$ (e.g., walls, furniture) and a set of dynamic human agents $\mathcal{H} = \{H_1, H_2, \dots, H_N\}$.
+
+The robot's state at time step $t$ is denoted by its pose $\mathbf{p}_{robot}^{(t)} \in \mathbb{SE}(3)$. The robot is tasked with fulfilling a natural language query $q$ by navigating to a specific, continuous semantic acoustic target $A_{target}$ (e.g., a ringing doorbell or a call for help). We define successful task completion as reaching a state where $\|\mathbf{p}_{robot}^{(t)} - \mathbf{p}_{target}\| \le d_{success}$, where $\mathbf{p}_{target}$ is the ground-truth location of $A_{target}$ and $d_{success}$ is the distance threshold.
+
+Simultaneously, the human agents $H_i \in \mathcal{H}$ may engage in acoustic activities $A_i$ (e.g., footsteps or conversations). These activities generate non-target social sounds that propagate through $\mathcal{E}$. The robot does not have access to the ground-truth states of $\mathcal{H}$; it must infer their presence, locations, and social boundaries solely through its egocentric sensory observations. We define an observation $O^{(t)} = (I^{(t)}, D^{(t)}, W^{(t)})$, comprising an RGB image $I^{(t)}$, a depth map $D^{(t)}$, and a $2.55\,\mathrm{s}$ first-order Ambisonics audio waveform $W^{(t)}$ ending at time $t$.
+
+The objective is to compute a sequence of velocity commands $\mathbf{v}^{(t)}$ that minimizes the time to reach $A_{target}$ while strictly avoiding physical collisions with $\mathcal{O}_{static} \cup \mathcal{H}$ and minimizing intrusions into the unobservable social interaction zones of $\mathcal{H}$. A summary of the key mathematical notations used throughout this section is provided in Table~\ref{tab:notation}.
+
+\begin{table}[h]
+    \centering
+    \caption{Summary of Key Notations}
+    \label{tab:notation}
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{cl}
+        \toprule
+        \textbf{Symbol} & \textbf{Definition} \\
+        \midrule
+        $\mathbf{p}_{vis}, \sigma_{vis}$ & 3D position and spatial uncertainty of a visually detected entity \\
+        $(\theta_{azi}, \theta_{ele}), \sigma_{ang}$ & Egocentric acoustic DoA and its angular uncertainty \\
+        $\mathbf{d}_{world}$ & Acoustic DoA vector transformed into the world frame \\
+        $S_{belief}(E_i)$ & Sparse belief score anchoring an acoustic event to visual entity $E_i$ \\
+        $\mathbf{p}_{hallucinated}$ & Topological node position for non-line-of-sight (NLOS) acoustic events \\
+        $\mathbf{v}_{virt}$ & Topology-aware hallucinated velocity vector of an unseen human \\
+        $C_{soc}(\mathbf{x})$ & Continuous social cost field evaluated at spatial location $\mathbf{x}$ \\
+        $\mathcal{M}_{belief}(\mathbf{x})$ & Probabilistic target belief map for resolving acoustic ambiguity \\
+        $U(p_i)$ & Information-theoretic utility of sampling candidate viewpoint $p_i$ \\
+        $S(\mathbf{x})$ & Speed field used in the Fast Marching Method (FMM) planner \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
 \begin{figure*}[t]
     \centering
     % TODO: Insert system architecture diagram here
