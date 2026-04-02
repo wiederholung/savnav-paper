@@ -13,8 +13,8 @@
 | :------------------------------ | :------ | :----------------------------------------------------------------- |
 | SAVNav                          | SAVNav  | 整个 socially-aware audio-visual navigation 方法与系统             |
 | the SAVNav task                 | -       | 论文定义的社会感知音视频导航任务与 benchmark                       |
-| acoustic target                 | -       | 导航目标对应的发声对象，如 doorbell、calling、music、running water |
-| social acoustic event           | -       | 由人类活动产生、需要建模为社会风险或交互边界的声音事件             |
+| acoustic target                 | -       | 导航目标对应的发声对象，如 doorbell、human call、television、water tap |
+| social acoustic event           | -       | 由人类活动产生、需要建模为社会风险或交互边界的声音事件，如 conversation、footsteps |
 | stationary conversational group | SCG     | 静态交谈群体，对应局部静态社会边界                                 |
 | dynamic pedestrian              | DP      | 运动中的行人，对应动态风险区域                                     |
 | social boundary                 | -       | 机器人应避免侵犯的社会边界                                         |
@@ -28,7 +28,7 @@
 | :-------------------------------------- | :------ | :---------------------------------------------------- |
 | multi-modal perception                  | -       | 多模态感知模块，处理 RGB-D 与音频输入                 |
 | acoustic-to-spatial social mapping      | SAVMap  | 将声学事件映射为可规划的空间社会结构                  |
-| sparse audio-visual anchoring           | -       | 将声学事件与视觉实体进行稀疏稳定关联的机制            |
+| audio-visual anchoring                  | -       | 将声学事件与视觉实体进行稳定关联的机制                |
 | anchoring confidence                    | -       | 衡量声学事件与视觉实体匹配强度的分数                  |
 | topology-aware acoustic anticipation    | -       | 借助拓扑结构推断 NLOS 风险来源与位置的机制            |
 | social cost field                       | -       | 将社会风险编码为空间连续代价场的表示                  |
@@ -43,6 +43,7 @@
 | :------------------------------ | :------ | :----------------------------------- |
 | first-order Ambisonics          | FOA     | 一阶 Ambisonics 空间音频格式         |
 | direction-of-arrival            | DOA     | 声源到达方向估计                     |
+| room impulse response           | RIR     | 房间冲激响应，用于生成具备物理属性的声学渲染数据 |
 | azimuth / elevation             | -       | 方位角 / 俯仰角                      |
 | confidence score                | -       | 置信度分数                           |
 | joint embedding space           | -       | 跨模态语义对齐的联合嵌入空间         |
@@ -91,7 +92,7 @@
 | $\mathcal{E}$                      | 连续三维导航环境                              |
 | $\mathcal{O}_{static}$             | 静态障碍物集合                                |
 | $\mathcal{H}$                      | 动态人类集合                                  |
-| $\mathbf{p}_{robot}^{(t)}$         | 机器人在时刻 $t$ 的位姿或位置状态             |
+| $\mathbf{p}_{R}$                   | 机器人在时刻 $t$ 的位姿或位置状态             |
 | $A_{target}$                       | acoustic target 对应的目标声事件              |
 | $\mathbf{p}_{target}$              | 目标声源的真实位置                            |
 | $d_{success}$                      | 判定成功的距离阈值                            |
@@ -104,23 +105,30 @@
 | $\theta_{azi}, \theta_{ele}$       | 声学 DOA 的方位角与俯仰角                     |
 | $\sigma_{ang}$                     | 声学方向不确定性                              |
 | $\mathbf{d}_{world}$               | 变换到世界坐标系的 DOA 方向向量               |
-| $S_{anchor}^{(t)}(E_i)$            | 时刻 $t$ 对实体 $E_i$ 的 anchoring confidence |
-| $sim$                              | 音频与视觉嵌入的余弦相似度                    |
-| $\theta_{dev}$                     | 实体到 DOA 射线的角偏差                       |
+| $S_{anch}^{(t)}(E_i)$              | 时刻 $t$ 对实体 $E_i$ 的 anchoring confidence |
+| $s$                                | 音频与视觉嵌入的余弦相似度                    |
+| $\Delta\theta_i, \Delta\theta_j$   | 实体/拓扑节点到 DOA 射线的角偏差              |
 | $\alpha$                           | anchoring 更新步长                            |
-| $\tau_{anchor}, \tau_{deanchor}$   | anchoring / de-anchoring 迟滞阈值             |
+| $\tau_{anch}, \tau_{deanch}$       | anchoring / de-anchoring 迟滞阈值             |
 | $\mathbf{p}_{inferred}$            | NLOS 推断位置                                 |
-| $\mathbf{v}_{infer}$               | NLOS 动态行人的推断速度                       |
+| $\mathbf{v}_{j}$                   | NLOS 动态行人的推断速度                       |
 | $v_{walk}$                         | 参考人类行走速度                              |
-| $C_{soc}(\mathbf{x})$              | 位置 $\mathbf{x}$ 处的社会代价                |
-| $d_{long}, d_{lat}$                | 相对速度方向的纵向 / 横向距离                 |
-| $\sigma_{long}, \sigma_{base}$     | 动态社会场纵向 / 基础尺度参数                 |
-| $\mathcal{M}_{belief}(\mathbf{x})$ | target spatial belief map                     |
-| $p_i, p^*$                         | 候选观察位姿 / 最优观察位姿                   |
-| $U(p_i)$                           | 候选位姿的信息效用                            |
-| $\mathcal{S}(p_i)$                 | 位姿 $p_i$ 的可见区域                         |
+| $C_{soc}(\mathbf{x})$              | 位置 $\mathbf{x}$ 处的连续社会代价            |
+| $C_{scg}(\mathbf{x}), C_{dp}(\mathbf{x})$ | SCG 与 DP 的社会代价分数              |
+| $x_j, y_j$                         | 相对推断速度方向的纵向 / 横向距离                 |
+| $\sigma_{x}, \sigma_{y}$           | 动态社会场纵向 / 横向参数                     |
+| $\mathcal{B}(\mathbf{x})$          | target spatial belief map (证据栅格)          |
+| $\mathbf{p}_i, \mathbf{p}^*$       | 候选观察位姿 / 最优观察位姿                   |
+| $U(\mathbf{p}_i)$                  | 候选位姿的信息效用                            |
+| $\mathcal{S}(\mathbf{p}_i)$        | 位姿 $\mathbf{p}_i$ 的可见区域                |
+| $\mathbf{c}$                       | 空间可见区域内的采样坐标点                  |
 | $L(\cdot)$                         | 测地路径长度                                  |
 | $\beta$                            | 探索收益与路径代价权衡系数                    |
+| $c_A$                              | 声学事件种类                                  |
+| $\tau_{cone}$                      | 用以判断候选节点的声学锥角阈值                |
+| $\tau_{nlos}$                      | 分配推断速度的 NLOS 风险阈值                  |
+| $A$                                | 社会代价场的基础振幅系数                      |
+| $\sigma_{scg}$                     | 静态交谈群体的高斯核空间方差                  |
 | $S(\mathbf{x})$                    | FMM 规划使用的速度场                          |
 | $S_{max}, S_{min}$                 | 速度场上界 / 下界                             |
 | $w_{soc}$                          | 社会代价权重                                  |

@@ -1,18 +1,18 @@
-\section{Methodology}
+\section{Method}
 \label{sec:method}
 
-To navigate complex, dynamic human environments, a robot must do more than treat sound as a geometric goal. SAVNav processes social acoustic events as persistent social boundaries. The architecture has three modules: multi-modal perception, SAVMap, and the SAVNav policy.
+To navigate complex, dynamic human environments, a robot must do more than treat sound as a geometric goal. SAVNav processes social acoustic events as persistent social boundaries. The system has three modules: multi-modal perception, SAVMap, and the SAVNav policy.
 
 \subsection{Problem Formulation and Notation}
 \label{subsec:problem_formulation}
 
-We formalize the SAVNav task in a continuous 3D environment populated by dynamic human agents. Let $\mathcal{E}$ denote the environment, which contains a set of static obstacles $\mathcal{O}_{static}$ (e.g., walls and furniture) and a set of dynamic human agents $\mathcal{H} = \{H_1, H_2, \dots, H_N\}$.
+We formalize the SAVNav task in a continuous 3D environment populated by dynamic human agents. Let $\mathcal{E}$ denote the environment, which contains a set of static obstacles $\mathcal{O}_{static}$ and a set of dynamic human agents $\mathcal{H} = \{H_1, H_2, \dots, H_N\}$. The robot is additionally given a static semantic map before navigation. This map provides four core priors: 1) a 2D navigable grid and obstacle distance field, 2) a set of precomputed topological nodes $\mathcal{N}_{topo}$ (e.g., corners, doorways, and corridor intersections), 3) the 3D spatial coordinates and oriented bounding boxes (OBB) of stationary semantic entities (e.g., doors, televisions, and sinks), and 4) pre-computed ImageBind cross-modal embeddings for these entities.
 
-The robot's state at time step $t$ is denoted by its pose $\mathbf{p}_{robot}^{(t)} \in \mathrm{SE}(3)$. The robot is tasked with fulfilling a natural language query $q$ by navigating to a specific acoustic target $A_{target}$, such as a ringing doorbell or a call for help. We define successful task completion as reaching a state where $\|\mathbf{p}_{robot}^{(t)} - \mathbf{p}_{target}\| \le d_{success}$, where $\mathbf{p}_{target}$ is the ground-truth location of $A_{target}$ and $d_{success}$ is the distance threshold.
+The robot state at time step $t$ is denoted by its pose in $\mathrm{SE}(3)$, from which we extract its 3D position $\mathbf{p}_{R}^{(t)} \in \mathbb{R}^3$. Each episode specifies a query token $q \in \{\texttt{doorbell}, \texttt{human call}, \texttt{television}, \texttt{water tap}\}$ that identifies the acoustic target. We define successful task completion as reaching a state where $\|\mathbf{p}_{R}^{(t)} - \mathbf{p}_{target}\| \le d_{success}$, where $\mathbf{p}_{target}$ is the ground-truth location of the acoustic target and $d_{success}$ is the distance threshold.
 
-Simultaneously, the human agents $H_i \in \mathcal{H}$ may engage in social acoustic events $A_i$ (e.g., footsteps or conversations) that propagate through $\mathcal{E}$. The robot does not have access to the ground-truth states of $\mathcal{H}$; it must infer their presence, locations, and social boundaries from egocentric sensory observations. We define an observation $O^{(t)} = (I^{(t)}, D^{(t)}, W^{(t)})$, comprising an RGB image $I^{(t)}$, a depth map $D^{(t)}$, and a $2.55\,\mathrm{s}$ first-order Ambisonics (FOA) audio waveform $W^{(t)}$ ending at time $t$.
+In addition to the target, human agents $H_i \in \mathcal{H}$ may emit social acoustic events, namely \texttt{footsteps} and \texttt{conversation}. The robot does not observe the ground-truth states of $\mathcal{H}$ and must infer their presence and social boundaries from egocentric sensory observations. We define an observation $O^{(t)} = (I^{(t)}, D^{(t)}, W^{(t)})$, comprising an RGB image $I^{(t)}$, a depth map $D^{(t)}$, and a $2.55\,\mathrm{s}$ FOA audio waveform $W^{(t)}$ ending at time $t$.
 
-The objective is to compute a sequence of velocity commands $\mathbf{v}^{(t)}$ that minimizes the time to reach $A_{target}$ while avoiding physical collisions with $\mathcal{O}_{static} \cup \mathcal{H}$ and minimizing intrusions into the unobservable social boundaries of $\mathcal{H}$. A summary of the key mathematical notations used throughout this section is provided in Table~\ref{tab:notation}.
+The objective is to compute velocity commands $\mathbf{v}^{(t)}$ that reach the acoustic target efficiently while avoiding collisions and social boundary violations. Table~\ref{tab:notation} summarizes the main notation used below.
 
 \begin{table}[ht]
     \centering
@@ -26,12 +26,11 @@ The objective is to compute a sequence of velocity commands $\mathbf{v}^{(t)}$ t
             $\mathbf{p}_{vis}, \sigma_{vis}$             & 3D position and spatial uncertainty of a visually detected entity           \\
             $(\theta_{azi}, \theta_{ele}), \sigma_{ang}$ & Egocentric acoustic DOA and its angular uncertainty                         \\
             $\mathbf{d}_{world}$                         & Acoustic DOA vector transformed into the world frame                        \\
-            $S_{anchor}^{(t)}(E_i)$                      & Anchoring confidence score linking an acoustic event to visual entity $E_i$ \\
-            $\mathbf{p}_{inferred}$                      & Topological node position for NLOS social acoustic events                   \\
-            $\mathbf{v}_{infer}$                         & Inferred velocity vector of an NLOS DP                                      \\
+            $S_{anch}^{(t)}(E_i)$                        & Anchoring confidence score linking an acoustic event to visual entity $E_i$ \\
+            $S_{nlos}^{(t)}(n_j)$                        & Topology-aware NLOS risk inferred at candidate node $n_j$             \\
             $C_{soc}(\mathbf{x})$                        & Continuous social cost field evaluated at spatial location $\mathbf{x}$     \\
-            $\mathcal{M}_{belief}(\mathbf{x})$           & Target spatial belief map for resolving acoustic ambiguity                  \\
-            $U(p_i)$                                     & Information-theoretic utility of sampling candidate viewpoint $p_i$         \\
+            $\mathcal{B}(\mathbf{x})$                    & Target spatial belief map (log-odds evidence grid)                          \\
+            $U(\mathbf{p}_i)$                                     & Information-theoretic utility of sampling candidate viewpoint $\mathbf{p}_i$         \\
             $S(\mathbf{x})$                              & Speed field used in the Fast Marching Method (FMM) planner                  \\
             \bottomrule
         \end{tabular}
@@ -40,13 +39,8 @@ The objective is to compute a sequence of velocity commands $\mathbf{v}^{(t)}$ t
 
 \begin{figure*}[t]
     \centering
-    % Insert the system architecture diagram here.
-    % The figure should illustrate:
-    % 1. Perception (YOLO + embed-ACCDOA) extracting entities and DOA.
-    % 2. SAVMap (sparse audio-visual anchoring and topology-aware acoustic anticipation converting audio to Cost Fields).
-    % 3. SAVNav Planner (State Machine toggling between Active Search and FMM Planning).
     \includegraphics[width=1.00\linewidth]{figures/method.pdf}
-    \caption{System architecture of SAVNav. Multi-modal sensory inputs (RGB-D and Ambisonics audio) are processed to extract visual entities and acoustic DOA. These are fused into SAVMap, a spatio-temporal representation that uses sparse audio-visual anchoring and topology-aware acoustic anticipation to map social acoustic events into persistent, anisotropic social cost fields. The SAVNav policy then yields to inferred boundaries and disambiguates uncertain acoustic targets through information-theoretic search.}
+    \caption{System architecture of SAVNav. Multi-modal sensory inputs (RGB-D and Ambisonics audio) are processed to extract visual entities and acoustic DOA. These are fused into SAVMap, a spatio-temporal representation that maintains structured beliefs via audio-visual anchoring and topology-aware acoustic anticipation, and projects them into persistent social cost fields. The SAVNav policy then yields to inferred boundaries and disambiguates uncertain acoustic targets through information-theoretic search.}
     \label{fig:system_arch}
 \end{figure*}
 
@@ -56,63 +50,83 @@ The objective is to compute a sequence of velocity commands $\mathbf{v}^{(t)}$ t
 The perception layer extracts spatial and semantic attributes from raw sensory streams and transforms them into object-centric representations.
 
 \subsubsection{Visual Perception}
-Operating at $20\,\mathrm{Hz}$, the visual module processes RGB-D inputs using YOLO26~\cite{YOLO26KeyArchitectural2026} for human detection. For each detected bounding box, we extract the 3D position $\mathbf{p}_{vis} \in \mathbb{R}^3$ via depth projection. To quantify measurement uncertainty caused by distance and occlusion, we assign a spatial uncertainty $\sigma_{vis} = k_d z^2 + k_{occ} (1 - \gamma_{mask})$, where $z$ is depth and $\gamma_{mask}$ is the segmentation mask ratio. Semantic features are extracted using ImageBind~\cite{ImageBindOneEmbedding2023}.
+Operating at $20\,\mathrm{Hz}$, the visual module processes RGB-D inputs using YOLO26~\cite{YOLO26KeyArchitectural2026} for human detection and segmentation. For each detected mask, we extract the 3D position $\mathbf{p}_{vis} \in \mathbb{R}^3$ via depth projection. To quantify measurement uncertainty caused by distance and occlusion, we assign a spatial uncertainty $\sigma_{vis} = k_d z^2 + k_{occ} (1 - \gamma_{mask})$, where $z$ is depth and $\gamma_{mask}$ is the mask ratio. We then crop the masked image region and encode it with ImageBind~\cite{ImageBindOneEmbedding2023} to obtain a visual embedding in a joint embedding space. For static physical objects (e.g., doors, TVs, sinks) that may act as acoustic targets, their locations, bounding boxes, and pre-computed ImageBind semantic embeddings are retrieved directly from the static semantic map to be used in cross-modal comparisons.
 
 \subsubsection{Acoustic Perception}
-The acoustic module processes FOA audio streams. Given the transient nature of social acoustic events, we use a sliding-window strategy and feed $2.55\,\mathrm{s}$ audio clips into the embed-ACCDOA model~\cite{OpenvocabularySoundEvent2025} every $0.5\,\mathrm{s}$. This yields the direction-of-arrival (DOA), denoted as angles $(\theta_{azi}, \theta_{ele})$ in the ego frame, together with the associated contrastive language-audio pretraining (CLAP) semantic embedding~\cite{CLAPLearningAudio2023}. The ego-centric DOA is then transformed into a world-frame directional vector $\mathbf{d}_{world} \in \mathbb{R}^3$ by querying the robot's pose at the event timestamp. To account for localization noise, we assign an angular uncertainty $\sigma_{ang}$ that is scaled by the model's confidence output.
+The acoustic module processes FOA audio streams. Given the transient nature of sound, we use a sliding-window strategy and feed $2.55\,\mathrm{s}$ audio clips into the embed-ACCDOA model~\cite{OpenvocabularySoundEvent2025} every $0.5\,\mathrm{s}$. This yields the direction-of-arrival (DOA), denoted as angles $(\theta_{azi}, \theta_{ele})$ in the ego frame, together with a CLAP embedding~\cite{CLAPLearningAudio2023}. To classify the sound, we compute the cosine similarity between the extracted CLAP embedding and the text embeddings of all expected semantic labels (including both the query token $q$ and distractor social events). The label with the highest similarity is assigned to the acoustic event, and we then encode this text label with ImageBind. This transforms the acoustic detection into the same joint embedding space as the visual entities, enabling direct cross-modal comparison. The ego-centric DOA is transformed into a world-frame directional vector $\mathbf{d}_{world} \in \mathbb{R}^3$ using the robot pose at the event timestamp. To account for localization noise, we assign an angular uncertainty $\sigma_{ang}$ scaled by the model confidence.
 
 \subsection{Acoustic-to-Spatial Social Mapping (SAVMap)}
 \label{subsec:savmap}
 
-Traditional social navigation relies on instantaneous, LOS detections. SAVMap addresses this by maintaining a spatio-temporal memory that anchors noisy acoustic vectors to physical geometry and generates dynamic social cost fields.
+Traditional social navigation relies on instantaneous LOS detections. SAVMap maintains three coupled states: anchoring confidence for LOS association, NLOS risk belief over topological nodes, and the social cost field used by the SAVNav policy.
 
-\subsubsection{Sparse Audio-Visual Anchoring}
-Acoustic DOA estimates are inherently noisy and lack depth information. To stably map audio events such as footsteps or chatting to physical entities, we introduce a sparse audio-visual anchoring state machine.
+\subsubsection{Audio-Visual Anchoring}
+Acoustic DOA estimates are inherently noisy and lack depth information. To stably associate an acoustic event with its physical source, we maintain an anchoring confidence over both tracked humans and mapped static objects.
 
-For each incoming acoustic event $A$, we evaluate its spatial and semantic consistency against all tracked visual entities within the DOA cone, defined by $\sigma_{ang}$. The anchoring confidence $S_{anchor}$ for an entity $E_i$ is recursively updated:
+For each incoming acoustic event $E_{snd}$, we evaluate all visual entities $E_i$ (either tracked humans or static objects, depending on the event label) inside the DOA cone defined by $\sigma_{ang}$. While the ImageBind similarity $s$ provides a semantic baseline (e.g., distinguishing a dynamic pedestrian from a television), it may not uniquely identify the source when multiple entities of the same class (e.g., two dynamic pedestrians) occupy the DOA cone. The anchoring mechanism resolves such multi-target ambiguity by weighting the semantic match against the angular deviation from the DOA. The anchoring confidence is updated as
 \begin{equation}
-    S_{anchor}^{(t)}(E_i) = S_{anchor}^{(t-1)}(E_i) + \alpha \cdot sim \cdot \exp\left(-\frac{\theta_{dev}^2}{2\sigma_{ang}^2}\right)
+    S_{anch}^{(t)}(E_i) = \min \left( 1, S_{anch}^{(t-1)}(E_i) + \alpha \cdot s \cdot \exp\left(-\frac{\Delta\theta_i^2}{2\sigma_{ang}^2}\right) \right)
 \end{equation}
-where $sim$ is the cosine similarity between the acoustic and visual embeddings, $\theta_{dev}$ is the angular deviation from the DOA ray, and $\alpha$ is the update step size. Entities outside the cone experience exponential decay. A hysteresis mechanism suppresses erratic anchoring caused by single-frame SELD errors and requires $S_{anchor} > \tau_{anchor}$ to anchor and $S_{anchor} < \tau_{deanchor}$ to release. Once anchored, the audio event inherits the 3D position and uncertainty of the visual entity.
+where $s$ is the ImageBind cosine similarity between the cross-modal embeddings, $\Delta\theta_i$ is the angular deviation of $E_i$ from the DOA direction, and $\alpha$ is the update step size. We clip $S_{anch}^{(t)}$ to $[0, 1]$, exponentially decay scores for entities outside the cone, and use hysteresis thresholds $\tau_{anch}$ and $\tau_{deanch}$ to prevent erratic toggling. Once anchored, the acoustic event inherits the 3D position and spatial uncertainty of the corresponding visual entity.
 
 \subsubsection{Topology-Aware Acoustic Anticipation}
-The main challenge in socially-aware navigation is reacting to NLOS risks. When an acoustic event such as footsteps from an NLOS DP or chatting from an NLOS SCG remains unanchored to any visual entity, SAVMap uses topology-aware acoustic anticipation.
+When a social acoustic event remains unanchored to any LOS visual entity, SAVMap predicts NLOS risk on topological nodes rather than on free space.
 
-Instead of treating the sound as only an ambiguous directional cone, the system casts a ray along $\mathbf{d}_{world}$. Upon intersecting a physical wall, it queries the static semantic map to identify the nearest topological node, such as a corner or a doorway, denoted by $\mathbf{p}_{inferred}$. The subsequent representation depends on the event's semantic classification: if the sound indicates dynamic pedestrians, we inject an inferred velocity vector $\mathbf{v}_{infer}$ pointing from the topological node toward the robot:
+Given an unanchored acoustic event $E_{snd}$ with class $c_A$, world-frame direction $\mathbf{d}_{world}$, and angular uncertainty $\sigma_{ang}$, we first construct a candidate set
 \begin{equation}
-    \mathbf{v}_{infer} = v_{walk} \cdot \frac{\mathbf{p}_{robot} - \mathbf{p}_{inferred}}{\|\mathbf{p}_{robot} - \mathbf{p}_{inferred}\|}
+    \mathcal{N}_{cand}^{(t)} = \{ n_j \in \mathcal{N}_{topo} \mid \Delta\theta_j < \tau_{cone} \}
 \end{equation}
-where $v_{walk}$ represents a standard human walking speed, predicting that an NLOS DP is likely approaching from the adjacent corridor. Conversely, if the sound indicates a stationary group, we place the inferred SCG at $\mathbf{p}_{inferred}$ without a velocity vector. This maps semantic acoustic cues to their corresponding spatial interactions.
+where $\mathcal{N}_{topo}$ is the set of precomputed topological nodes, $\Delta\theta_j = \phi(n_j, \mathbf{d}_{world})$ is the angular deviation from the DOA, and $\tau_{cone}$ is the acoustic cone threshold. This filtering keeps only acoustically plausible topological exits.
 
-\subsubsection{Anisotropic Social Cost Fields}
-To influence robot behavior, SAVMap translates anchored and inferred entities into a continuous social cost field $C_{soc}(\mathbf{x}) \in [0, 1]$. We use dynamic Gaussian fields to represent different social semantics:
+In indoor scenes, diffraction makes corners and doorways act as secondary sound emitters, so the measured DOA often aligns with the node through which sound energy emerges. Instead of treating the DOA ray as a strict geometric vector, we evaluate the plausibility of each candidate node.
+
+Each candidate node $n_j$ is assigned a heuristic risk score
+\begin{equation}
+    S_{nlos}^{(t)}(n_j) = \lambda S_{nlos}^{(t-1)}(n_j) + (1-\lambda) \exp\left(-\frac{\Delta\theta_j^2}{2\sigma_{ang}^2}\right)
+\end{equation}
+where the exponential term measures directional alignment and $\lambda$ controls temporal smoothing to reject transient SELD noise. Because the event $E_{snd}$ is unanchored (meaning no matching visual entity was found in the current line-of-sight), nodes within the DOA cone are conservatively treated as plausible emergence locations regardless of whether the node's exact geometric coordinate is currently visible. This continuous score circumvents the brittleness of single-point raycasting by maintaining a persistent, topology-aware NLOS risk belief over multiple emergence candidates. Crucially, this risk representation is strictly tied to the unanchored state of the acoustic event: if $E_{snd}$ ceases, the score decays exponentially to zero via the $\lambda$ term; conversely, if the human source enters LOS and becomes anchored to a visual entity, the associated NLOS scores are immediately cleared, seamlessly transferring the social boundary from inferred nodes to the observed entity.
+
+For \texttt{footsteps}, the robot assigns a conservative velocity hypothesis to each node where $S_{nlos}^{(t)}(n_j) > \tau_{nlos}$:
+\begin{equation}
+    \mathbf{v}_{j} = v_{walk} \cdot \frac{\mathbf{p}_{R} - \mathbf{p}_{n_j}}{\|\mathbf{p}_{R} - \mathbf{p}_{n_j}\|}
+\end{equation}
+where $v_{walk}$ is a reference walking speed, $\mathbf{p}_{R}$ is the current robot position, and $\tau_{nlos}$ is the risk threshold for assigning velocity. While a pedestrian emerging from a corner may theoretically follow the corridor axis, imposing a velocity hypothesis that points directly toward the robot serves as a robust, worst-case anticipation. This configuration enforces the most stringent frontal yielding constraint within the arrival-time field, ensuring the robot clears adequate braking distance for potential head-on conflicts, even if the eventual LOS trajectory deviates. For \texttt{conversation}, the corresponding active nodes are treated as stationary social boundaries.
+
+\subsubsection{Social Cost Fields}
+SAVMap converts anchored entities and NLOS risk scores into a continuous social cost field $C_{soc}(\mathbf{x}) \in [0, 1]$.
 
 \begin{enumerate}
-    \item \textit{Stationary Interactions (Chatting):} Modeled as isotropic Gaussians centered at $\mathbf{p}_{entity}$ for anchored entities, or $\mathbf{p}_{inferred}$ for an NLOS SCG, so the robot keeps a polite radius around social groups.
-    \item \textit{Approaching Pedestrians (Footsteps):} Modeled as asymmetric anisotropic Gaussians. The spatial variance is elongated along the forward velocity vector, which is $\mathbf{v}$ for anchored entities or $\mathbf{v}_{infer}$ for inferred NLOS DPs:
+    \item \textit{SCGs:} For anchored entities, we use isotropic Gaussians centered at the observed position. For NLOS \texttt{conversation}, we use a weighted mixture over candidate nodes:
           \begin{equation}
-              C_{soc, dp}(\mathbf{x}) = A \cdot \exp \left( - \left( \frac{d_{long}^2}{2\sigma_{long}^2} + \frac{d_{lat}^2}{2\sigma_{base}^2} \right) \right)
+              C_{scg}(\mathbf{x}) = \sum_{n_j \in \mathcal{N}_{cand}} S_{nlos}^{(t)}(n_j) \cdot A \exp\left(-\frac{\|\mathbf{x} - \mathbf{p}_{n_j}\|^2}{2\sigma^2_{scg}}\right)
           \end{equation}
-          where $d_{long}$ and $d_{lat}$ are the longitudinal and lateral distances to the velocity vector. The forward spread $\sigma_{long}$ scales linearly with speed and prevents the robot from crossing the pedestrian's anticipated path.
+          where $A$ is the base cost amplitude, and $\sigma_{scg}$ defines the spatial variance for stationary conversational groups.
+    \item \textit{DPs:} For anchored LOS dynamic pedestrians, we use the observed velocity $\mathbf{v}$. For NLOS \texttt{footsteps}, we aggregate anisotropic fields induced by candidate nodes:
+          \begin{equation}
+              C_{dp}(\mathbf{x}) = \sum_{n_j \in \mathcal{N}_{cand}} S_{nlos}^{(t)}(n_j) \cdot A \exp \left( - \frac{x_j^2}{2\sigma_{x,j}^2} - \frac{y_j^2}{2\sigma_y^2} \right)
+          \end{equation}
+          where $x_j$ and $y_j$ are the longitudinal and lateral distances from $\mathbf{x}$ to $\mathbf{p}_{n_j}$ aligned with $\mathbf{v}_{j}$. The lateral variance $\sigma_y$ is constant, while the forward spread $\sigma_{x,j}$ scales with the anticipated motion magnitude.
 \end{enumerate}
+
+The final field combines LOS components and NLOS components in one planning representation. The NLOS part is conservative by design: it reserves socially safe space around plausible emergence nodes before visual confirmation.
 
 \subsection{Proactive Socially-Aware Navigation Policy (SAVNav policy)}
 \label{subsec:savnav}
 
-The SAVNav policy translates the spatial constraints of SAVMap into safe, target-driven motion. The planner yields to social boundaries and disambiguates target locations when acoustic evidence is uncertain.
+The SAVNav policy translates SAVMap into safe, target-driven motion. It operates on two map-level representations: the target spatial belief map for acoustic target search and the social cost field for social compliance.
 
 \subsubsection{Active Sensory Exploration}
-If the acoustic target, such as a call for help, is detected but remains unanchored due to occlusion or reverberation, the robot enters an active exploration state. We maintain a target spatial belief map $\mathcal{M}_{belief}(\mathbf{x})$, which receives positive updates within the acoustic DOA cone and negative updates in visually cleared empty space.
+If the acoustic target is detected but remains unanchored due to occlusion or reverberation, the robot enters active sensory exploration. We maintain a target spatial belief map $\mathcal{B}(\mathbf{x})$ over the navigable space, which functions as an evidence grid storing log-odds probabilities of the target's presence. Following standard Bayesian mapping semantics, $\mathcal{B}$ receives positive log-odds updates inside the acoustic DOA cone upon target detection, and receives negative log-odds decay in any free space cleared by the robot's visual frustum.
 
-To resolve target ambiguity, the robot samples candidate viewpoints $\mathcal{P} = \{p_1, \dots, p_N\}$ near topological nodes and within the DOA cone. The optimal viewpoint $p^*$ is selected by maximizing an information-theoretic utility function:
+To resolve target ambiguity, the robot samples candidate viewpoints $\mathcal{P} = \{\mathbf{p}_1, \dots, \mathbf{p}_N\}$ near topological nodes inside the DOA cone. The optimal viewpoint $\mathbf{p}^*$ is selected by maximizing
 \begin{equation}
-    U(p_i) = \sum_{\mathbf{c} \in \mathcal{S}(p_i)} \mathcal{M}_{belief}(\mathbf{c}) \cdot \gamma(\|\mathbf{c} - p_i\|) - \beta \cdot \frac{L(\mathbf{p}_{robot}, p_i)}{v_{avg}}
+    U(\mathbf{p}_i) = \sum_{\mathbf{c} \in \mathcal{S}(\mathbf{p}_i)} \mathcal{B}(\mathbf{c}) \gamma(\|\mathbf{c} - \mathbf{p}_i\|) - \beta \frac{L(\mathbf{p}_{R}, \mathbf{p}_i)}{v_{avg}}
 \end{equation}
-where $\mathcal{S}(p_i)$ is the visible frustum area from viewpoint $p_i$, $\gamma(\cdot)$ penalizes excessive observation distance, $L(\cdot)$ computes the geodesic path length, and $\beta$ balances exploration gain against travel time. This makes the robot move to observe ambiguous acoustic regions instead of following noisy audio vectors directly.
+where $\mathcal{S}(\mathbf{p}_i)$ is the visible spatial region from viewpoint $\mathbf{p}_i$, $\mathbf{c}$ is a spatial coordinate within that region, $\gamma(\cdot)$ penalizes large viewing distance, $L(\cdot)$ is the geodesic path length, $v_{avg}$ is the average exploration speed, and $\beta$ balances information gain and travel cost.
 
 \subsubsection{Socially-Compliant Precision Navigation}
-Once the acoustic target is anchored, or a clear viewpoint $p^*$ is selected, the system generates smooth, collision-free trajectories. We formulate this as wave propagation in a heterogeneous medium and solve the Eikonal equation using the Fast Marching Method (FMM)~\cite{FastMarchingMethods1999}. The speed field $S(\mathbf{x})$ is defined inversely proportional to the social cost:
+Once the acoustic target is anchored, or a clear viewpoint $\mathbf{p}^*$ is selected, the system generates socially compliant reference trajectories. We formulate global path planning as wave propagation in a heterogeneous medium, solving the Eikonal equation via the Fast Marching Method (FMM)~\cite{FastMarchingMethods1999}. The scalar speed field driving the propagation is
 \begin{equation}
-    S(\mathbf{x}) = S_{max} \cdot \left(1 - w_{soc} \cdot C_{soc}(\mathbf{x})\right) + S_{min}
+    S(\mathbf{x}) = S_{max} \cdot \left(1 - w_{soc} \cdot C_{soc}(\mathbf{x})\right) + S_{min},
 \end{equation}
-The inclusion of the base speed $S_{min}$ ensures that, while the robot prefers to route around social boundaries such as SCGs or the extended risk fields of NLOS DPs, it will not become stuck in dense crowds. Gradient descent on the resulting arrival-time field produces socially compliant paths that curve around both LOS humans and anticipated NLOS DPs.
+where $w_{soc} \in [0, 1]$ is the social cost weight, and $S_{min} > 0$ defines the minimum permissible speed to prevent path generation deadlock around dense obstacles or social boundaries. The FMM intrinsically generates a local-minima-free arrival-time landscape. Because the continuous social field $C_{soc}(\mathbf{x})$ smoothly diminishes wave propagation speed near both LOS humans and high-risk NLOS nodes, gradient descent on the arrival-time landscape yields paths that naturally bend away from these boundaries early. This reference path is then passed to the robot's local motion controller to compute the final, kinematically feasible velocity commands $\mathbf{v}^{(t)}$.
