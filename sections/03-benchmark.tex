@@ -21,15 +21,15 @@ To evaluate the agent across different physical and social contexts, we structur
 	\caption{SAVNav benchmark scenarios. The taxonomy separates LOS social routing (Crowded Social), NLOS acoustic anticipation (Hidden Boundary), and mixed domestic settings (Mixed Home Activity). The social composition defines the allowable combinations of SCGs and DPs, excluding the potential target human.}
 	\label{tab:benchmark_tiers}
 	\resizebox{\linewidth}{!}{
-	\begin{tabular}{lccl}
-		\toprule
-		Scenario & Distractors & Visibility & Social Composition   \\
-		\midrule
-		Crowded Social      & 3--5   & LOS              & 1--2 SCGs + 1--2 DPs \\
-		Hidden Boundary      & 1--3   & NLOS             & 0--1 SCG + 1 DP      \\
-		Mixed Home Activity      & 3--5   & Mixed            & 1--2 SCGs + 1--3 DPs \\
-		\bottomrule
-	\end{tabular}
+		\begin{tabular}{lccl}
+			\toprule
+			Scenario            & Distractors & Visibility & Social Composition   \\
+			\midrule
+			Crowded Social      & 3--5        & LOS        & 1--2 SCGs + 1--2 DPs \\
+			Hidden Boundary     & 1--3        & NLOS       & 0--1 SCG + 1 DP      \\
+			Mixed Home Activity & 3--5        & Mixed      & 1--2 SCGs + 1--3 DPs \\
+			\bottomrule
+		\end{tabular}
 	}
 \end{table}
 
@@ -52,7 +52,7 @@ For the crowded social scenario, humans are spawned within the main topological 
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=1.00\linewidth]{figures/simulation.pdf}
+	\includegraphics[width=1.00\linewidth]{figures/sim.png}
 	\caption{Illustration of the simulation environment and episode generation protocol. The benchmark explicitly couples acoustic targets, multi-agent human trajectories, and precise raycast-verified NLOS conditions.}
 	\label{fig:benchmark_sim}
 \end{figure}

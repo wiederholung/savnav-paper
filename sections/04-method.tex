@@ -1,7 +1,7 @@
 \section{Method}
 \label{sec:method}
 
-To navigate complex, dynamic human environments, a robot must do more than treat sound as a geometric goal. SAVNav processes social acoustic events as persistent social boundaries. The system has three modules: multi-modal perception, SAVMap, and the SAVNav policy.
+To navigate complex, dynamic human environments, a robot must do more than treat sound as a geometric goal. SAVNav processes social acoustic events as persistent social boundaries. The system operates through a three-stage pipeline: First, multi-modal perception fuses visual and acoustic streams into SAVMap, extracting both target locations and spatial social boundaries. Second, if the acoustic target is uncertain, the SAVNav policy queries SAVMap to find an optimal viewpoint for active sensory exploration. Finally, given an anchored target or a selected viewpoint, the policy generates a socially-compliant precision navigation path that explicitly yields to the modeled boundaries.
 
 \subsection{Problem Formulation and Notation}
 \label{subsec:problem_formulation}
@@ -61,9 +61,9 @@ The acoustic module processes FOA audio streams. Given the transient nature of s
 Traditional social navigation relies on instantaneous LOS detections. SAVMap maintains three coupled states: anchoring confidence for LOS association, NLOS risk belief over topological nodes, and the social cost field used by the SAVNav policy.
 
 \subsubsection{Audio-Visual Anchoring}
-Acoustic DOA estimates are inherently noisy and lack depth information. To stably associate an acoustic event with its physical source, we maintain an anchoring confidence over both tracked humans and mapped static objects.
+Acoustic DOA estimates are inherently noisy and lack depth information. To stably associate an acoustic event with its physical source, we perform audio-visual anchoring. This process targets two distinct entity types: 1) static mapped objects acting as acoustic targets (e.g., \texttt{doorbell}, \texttt{television}), where the visual location is known from the map but the acoustic activation must be verified; and 2) dynamic humans emitting social events (\texttt{conversation}, \texttt{footsteps}), which must be visually confirmed to establish a firm social boundary.
 
-For each incoming acoustic event $E_{snd}$, we evaluate all visual entities $E_i$ (either tracked humans or static objects, depending on the event label) inside the DOA cone defined by $\sigma_{ang}$. While the ImageBind similarity $s$ provides a semantic baseline (e.g., distinguishing a dynamic pedestrian from a television), it may not uniquely identify the source when multiple entities of the same class (e.g., two dynamic pedestrians) occupy the DOA cone. The anchoring mechanism resolves such multi-target ambiguity by weighting the semantic match against the angular deviation from the DOA. The anchoring confidence is updated as
+For each incoming acoustic event $E_{snd}$, we evaluate all candidate visual entities $E_i$ (either tracked LOS humans or static objects, depending on the event label) inside the DOA cone defined by $\sigma_{ang}$. While the ImageBind similarity $s$ provides a semantic baseline, it may not uniquely identify the source when multiple entities of the same class occupy the cone. The anchoring mechanism resolves this ambiguity by weighting the semantic match against the angular deviation from the DOA. The anchoring confidence is updated as
 \begin{equation}
     S_{anch}^{(t)}(E_i) = \min \left( 1, S_{anch}^{(t-1)}(E_i) + \alpha \cdot s \cdot \exp\left(-\frac{\Delta\theta_i^2}{2\sigma_{ang}^2}\right) \right)
 \end{equation}
@@ -93,22 +93,22 @@ For \texttt{footsteps}, the robot assigns a conservative velocity hypothesis to 
 where $v_{walk}$ is a reference walking speed, $\mathbf{p}_{R}$ is the current robot position, and $\tau_{nlos}$ is the risk threshold for assigning velocity. While a pedestrian emerging from a corner may theoretically follow the corridor axis, imposing a velocity hypothesis that points directly toward the robot serves as a robust, worst-case anticipation. This configuration enforces the most stringent frontal yielding constraint within the arrival-time field, ensuring the robot clears adequate braking distance for potential head-on conflicts, even if the eventual LOS trajectory deviates. For \texttt{conversation}, the corresponding active nodes are treated as stationary social boundaries.
 
 \subsubsection{Social Cost Fields}
-SAVMap converts anchored entities and NLOS risk scores into a continuous social cost field $C_{soc}(\mathbf{x}) \in [0, 1]$.
+SAVMap converts both inferred NLOS risks and visually confirmed LOS entities into a continuous social cost field $C_{soc}(\mathbf{x}) \in [0, 1]$. We formulate this generically over a spatial probability distribution, where NLOS boundaries are represented as multi-modal risk fields driven by topological inference, and LOS boundaries naturally emerge as a deterministic special case.
 
 \begin{enumerate}
-    \item \textit{SCGs:} For anchored entities, we use isotropic Gaussians centered at the observed position. For NLOS \texttt{conversation}, we use a weighted mixture over candidate nodes:
+    \item \textit{SCGs:} For NLOS \texttt{conversation}, we use a weighted mixture of isotropic Gaussians over the inferred candidate nodes:
           \begin{equation}
               C_{scg}(\mathbf{x}) = \sum_{n_j \in \mathcal{N}_{cand}} S_{nlos}^{(t)}(n_j) \cdot A \exp\left(-\frac{\|\mathbf{x} - \mathbf{p}_{n_j}\|^2}{2\sigma^2_{scg}}\right)
           \end{equation}
           where $A$ is the base cost amplitude, and $\sigma_{scg}$ defines the spatial variance for stationary conversational groups.
-    \item \textit{DPs:} For anchored LOS dynamic pedestrians, we use the observed velocity $\mathbf{v}$. For NLOS \texttt{footsteps}, we aggregate anisotropic fields induced by candidate nodes:
+    \item \textit{DPs:} For NLOS \texttt{footsteps}, we aggregate anisotropic fields induced by the candidate nodes and their corresponding velocity hypotheses:
           \begin{equation}
               C_{dp}(\mathbf{x}) = \sum_{n_j \in \mathcal{N}_{cand}} S_{nlos}^{(t)}(n_j) \cdot A \exp \left( - \frac{x_j^2}{2\sigma_{x,j}^2} - \frac{y_j^2}{2\sigma_y^2} \right)
           \end{equation}
           where $x_j$ and $y_j$ are the longitudinal and lateral distances from $\mathbf{x}$ to $\mathbf{p}_{n_j}$ aligned with $\mathbf{v}_{j}$. The lateral variance $\sigma_y$ is constant, while the forward spread $\sigma_{x,j}$ scales with the anticipated motion magnitude.
 \end{enumerate}
 
-The final field combines LOS components and NLOS components in one planning representation. The NLOS part is conservative by design: it reserves socially safe space around plausible emergence nodes before visual confirmation.
+When a human enters LOS and the social acoustic event is successfully anchored via $S_{anch}^{(t)}$, the candidate probability collapses to a single visually confirmed entity ($P=1$), and the spatial uncertainty converges to the visual uncertainty $\sigma_{vis}$. Similarly, for dynamic pedestrians, the assumed worst-case frontal velocity $\mathbf{v}_j$ is replaced by the true velocity $\mathbf{v}$ estimated from visual tracking. The summations in the above equations thus gracefully degrade into single deterministic social costs centered at $\mathbf{p}_{vis}$. This unified formulation ensures that NLOS costs act as conservative acoustic anticipations, which seamlessly harden into precise visual LOS boundaries upon observation.
 
 \subsection{Proactive Socially-Aware Navigation Policy (SAVNav policy)}
 \label{subsec:savnav}
