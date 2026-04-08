@@ -8,7 +8,7 @@ To navigate complex, dynamic human environments, a robot must do more than treat
 
 We formalize the SAVNav task in a continuous 3D environment populated by dynamic human agents. Let $\mathcal{E}$ denote the environment, which contains a set of static obstacles $\mathcal{O}_{static}$ and a set of dynamic human agents $\mathcal{H} = \{H_1, H_2, \dots, H_N\}$. The robot is additionally given a static semantic map before navigation. This map provides four core priors: 1) a 2D navigable grid and obstacle distance field, 2) a set of precomputed topological nodes $\mathcal{N}_{topo}$ (e.g., corners, doorways, and corridor intersections), 3) the 3D spatial coordinates and oriented bounding boxes (OBB) of stationary semantic entities (e.g., doors, televisions, and sinks), and 4) pre-computed ImageBind cross-modal embeddings for these entities.
 
-The robot state at time step $t$ is denoted by its pose in $\mathrm{SE}(3)$, from which we extract its 3D position $\mathbf{p}_{R}^{(t)} \in \mathbb{R}^3$. Each episode specifies a query token $q \in \{\texttt{doorbell}, \texttt{human call}, \texttt{television}, \texttt{water tap}\}$ that identifies the acoustic target. We define successful task completion as reaching a state where $\|\mathbf{p}_{R}^{(t)} - \mathbf{p}_{target}\| \le d_{success}$, where $\mathbf{p}_{target}$ is the ground-truth location of the acoustic target and $d_{success}$ is the distance threshold.
+The robot state at time step $t$ is denoted by its pose in $\mathrm{SE}(3)$, from which we extract its 3D position $\mathbf{p}_{R}^{(t)} \in \mathbb{R}^3$. Each episode specifies a query token $q \in \{\texttt{doorbell}, \texttt{human call}, \texttt{television}, \texttt{water tap}\}$ that identifies the acoustic target. We define successful task completion as reaching a state where $\|\mathbf{p}_{R}^{(t)} - \mathbf{p}_{target}\| \le d_{success}$ without colliding with any human agent, where $\mathbf{p}_{target}$ is the ground-truth location of the acoustic target and $d_{success}$ is the distance threshold.
 
 In addition to the target, human agents $H_i \in \mathcal{H}$ may emit social acoustic events, namely \texttt{footsteps} and \texttt{conversation}. The robot does not observe the ground-truth states of $\mathcal{H}$ and must infer their presence and social boundaries from egocentric sensory observations. We define an observation $O^{(t)} = (I^{(t)}, D^{(t)}, W^{(t)})$, comprising an RGB image $I^{(t)}$, a depth map $D^{(t)}$, and a $2.55\,\mathrm{s}$ FOA audio waveform $W^{(t)}$ ending at time $t$.
 
@@ -21,17 +21,17 @@ The objective is to compute velocity commands $\mathbf{v}^{(t)}$ that reach the 
     \resizebox{\linewidth}{!}{
         \begin{tabular}{cl}
             \toprule
-            \textbf{Symbol}                              & \textbf{Definition}                                                         \\
+            \textbf{Symbol}                              & \textbf{Definition}                                                          \\
             \midrule
-            $\mathbf{p}_{vis}, \sigma_{vis}$             & 3D position and spatial uncertainty of a visually detected entity           \\
-            $(\theta_{azi}, \theta_{ele}), \sigma_{ang}$ & Egocentric acoustic DOA and its angular uncertainty                         \\
-            $\mathbf{d}_{world}$                         & Acoustic DOA vector transformed into the world frame                        \\
-            $S_{anch}^{(t)}(E_i)$                        & Anchoring confidence score linking an acoustic event to visual entity $E_i$ \\
-            $S_{nlos}^{(t)}(n_j)$                        & Topology-aware NLOS risk inferred at candidate node $n_j$             \\
-            $C_{soc}(\mathbf{x})$                        & Continuous social cost field evaluated at spatial location $\mathbf{x}$     \\
-            $\mathcal{B}(\mathbf{x})$                    & Target spatial belief map (log-odds evidence grid)                          \\
-            $U(\mathbf{p}_i)$                                     & Information-theoretic utility of sampling candidate viewpoint $\mathbf{p}_i$         \\
-            $S(\mathbf{x})$                              & Speed field used in the Fast Marching Method (FMM) planner                  \\
+            $\mathbf{p}_{vis}, \sigma_{vis}$             & 3D position and spatial uncertainty of a visually detected entity            \\
+            $(\theta_{azi}, \theta_{ele}), \sigma_{ang}$ & Egocentric acoustic DOA and its angular uncertainty                          \\
+            $\mathbf{d}_{world}$                         & Acoustic DOA vector transformed into the world frame                         \\
+            $S_{anch}^{(t)}(E_i)$                        & Anchoring confidence score linking an acoustic event to visual entity $E_i$  \\
+            $S_{nlos}^{(t)}(n_j)$                        & Topology-aware NLOS risk inferred at candidate node $n_j$                    \\
+            $C_{soc}(\mathbf{x})$                        & Continuous social cost field evaluated at spatial location $\mathbf{x}$      \\
+            $\mathcal{B}(\mathbf{x})$                    & Target spatial belief map (log-odds evidence grid)                           \\
+            $U(\mathbf{p}_i)$                            & Information-theoretic utility of sampling candidate viewpoint $\mathbf{p}_i$ \\
+            $S(\mathbf{x})$                              & Speed field used in the Fast Marching Method (FMM) planner                   \\
             \bottomrule
         \end{tabular}
     }
@@ -84,7 +84,7 @@ Each candidate node $n_j$ is assigned a heuristic risk score
 \begin{equation}
     S_{nlos}^{(t)}(n_j) = \lambda S_{nlos}^{(t-1)}(n_j) + (1-\lambda) \exp\left(-\frac{\Delta\theta_j^2}{2\sigma_{ang}^2}\right)
 \end{equation}
-where the exponential term measures directional alignment and $\lambda$ controls temporal smoothing to reject transient SELD noise. Because the event $E_{snd}$ is unanchored (meaning no matching visual entity was found in the current line-of-sight), nodes within the DOA cone are conservatively treated as plausible emergence locations regardless of whether the node's exact geometric coordinate is currently visible. This continuous score circumvents the brittleness of single-point raycasting by maintaining a persistent, topology-aware NLOS risk belief over multiple emergence candidates. Crucially, this risk representation is strictly tied to the unanchored state of the acoustic event: if $E_{snd}$ ceases, the score decays exponentially to zero via the $\lambda$ term; conversely, if the human source enters LOS and becomes anchored to a visual entity, the associated NLOS scores are immediately cleared, seamlessly transferring the social boundary from inferred nodes to the observed entity.
+where the exponential term measures directional alignment and $\lambda$ controls temporal smoothing to reject transient SELD noise. Because the event $E_{snd}$ is unanchored (meaning no matching visual entity was found in the current line of sight), nodes within the DOA cone are conservatively treated as plausible emergence locations regardless of whether the node's exact geometric coordinate is currently visible. This continuous score circumvents the brittleness of single-point raycasting by maintaining a persistent, topology-aware NLOS risk belief over multiple emergence candidates. Crucially, this risk representation is strictly tied to the unanchored state of the acoustic event: if $E_{snd}$ ceases, the score decays exponentially to zero via the $\lambda$ term; conversely, if the human source enters LOS and becomes anchored to a visual entity, the associated NLOS scores are immediately cleared, seamlessly transferring the social boundary from inferred nodes to the observed entity.
 
 For \texttt{footsteps}, the robot assigns a conservative velocity hypothesis to each node where $S_{nlos}^{(t)}(n_j) > \tau_{nlos}$:
 \begin{equation}

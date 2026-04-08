@@ -1,0 +1,122 @@
+\section{Experiments}
+\label{sec:experiments}
+
+We evaluate SAVNav on the benchmark introduced in Section~\ref{sec:benchmark} from three complementary perspectives. First, we test whether a single system can simultaneously satisfy the coupled requirements of acoustic target reaching, human safety, and social compliance. Second, we test whether the gains come from persistent structured reasoning in SAVMap rather than from richer multi-modal sensing alone. Third, we isolate which capabilities in SAVMap and the SAVNav policy are responsible for performance in LOS social routing, NLOS acoustic anticipation, and ambiguity-aware target search.
+
+\subsection{Experimental Setup}
+\label{subsec:exp-setup}
+
+We conduct all simulation experiments in Habitat 3.0 with SoundSpaces 2.0 acoustic rendering, using the benchmark protocol from Section~\ref{sec:benchmark}. The three scenarios stress different aspects of the SAVNav task. Crowded Social evaluates LOS social routing around visible SCGs and DPs, Hidden Boundary isolates NLOS acoustic anticipation at blind corners, and Mixed Home Activity evaluates whether a policy can jointly handle target search, visible social boundaries, and acoustically inferred NLOS risks in the same episode. Unless otherwise noted, all compared methods share the same episode budget ($T_{max}=500$), success criterion ($d_{success}=1.0\,\mathrm{m}$), and evaluation metrics.
+
+We compare SAVNav against three baselines chosen to expose distinct failure modes of the SAVNav task. Falcon+Goal Oracle represents strong LOS social navigation without acoustic social reasoning; ENMuS\textsuperscript{3} represents target-seeking audio-visual navigation without social boundary modeling; and Reactive SAVNav shares the same perception front-end as our full system but removes persistent map-level reasoning. These baselines are adapted only as needed to make them operational on our benchmark, and each is evaluated in the strongest setting consistent with its original design assumptions.
+
+\begin{enumerate}
+	\item \textit{Falcon+Goal Oracle:} Falcon~\cite{CognitionPrecognitionFutureaware2025} is a vision-based social navigation method that predicts human motion from egocentric observations. Because it is not designed for acoustic target search, we provide the ground-truth target location as a navigation goal oracle while keeping all human reasoning purely vision-based. This adaptation isolates the limitation of LOS-only social reasoning: Falcon can react to visible humans, but it cannot use \texttt{conversation} or \texttt{footsteps} as NLOS social cues.
+	\item \textit{ENMuS\textsuperscript{3}:} ENMuS\textsuperscript{3}~\cite{AudiovisualNavigationNoisy2025} is a multi-source audio-visual navigation framework for category-conditioned sound seeking. We map our query tokens to aligned BeDAViN target categories when available (\texttt{doorbell}, \texttt{television}, and \texttt{water tap}). Episodes with the \texttt{human call} target are excluded for this baseline because ENMuS\textsuperscript{3} has no semantically aligned target category. ENMuS\textsuperscript{3} therefore serves as a socially-unaware AVNav baseline: it uses audio to pursue the acoustic target but does not interpret human-generated sounds as social boundaries.
+	\item \textit{Reactive SAVNav:} This is a memory-free, observation-reactive variant built on the same multi-modal perception module as SAVNav. At each planning cycle, it constructs social costs only from the current LOS detections and the current acoustic observations, without persistent audio-visual anchoring, topology-aware acoustic anticipation, or a target spatial belief map. If the acoustic target is anchored, it plans directly to the anchored position; otherwise, it selects a short-horizon reachable waypoint along the current target DOA and replans reactively at the next cycle. This baseline tests whether instantaneous multi-modal reactions are sufficient without a persistent spatio-temporal representation.
+\end{enumerate}
+
+\subsection{Main Results in Simulation}
+\label{subsec:exp-main}
+
+Table~\ref{tab:main_results} reports the quantitative performance of SAVNav and the baselines across the three scenarios.
+
+\begin{table*}[t]
+	\centering
+	\caption{Main results on the SAVNav benchmark. ENMuS\textsuperscript{3} is evaluated only on episodes whose target categories admit aligned BeDAViN mappings. NCR in Crowded Social is marked as `--' because that scenario contains no NLOS human risk by definition.}
+	\label{tab:main_results}
+	\resizebox{\linewidth}{!}{
+	\begin{tabular}{l | ccccc | ccccc | ccccc}
+		\toprule
+		\multirow{2}{*}{Method} & \multicolumn{5}{c|}{Crowded Social} & \multicolumn{5}{c|}{Hidden Boundary} & \multicolumn{5}{c}{Mixed Home Activity} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11} \cmidrule(lr){12-16}
+		& SR $\uparrow$ & SPL $\uparrow$ & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$ 
+		& SR $\uparrow$ & SPL $\uparrow$ & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$ 
+		& SR $\uparrow$ & SPL $\uparrow$ & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$ \\
+		\midrule
+		Falcon+Goal Oracle & & & & -- & 
+		& & & & & 
+		& & & & & \\
+		ENMuS\textsuperscript{3} & & & & -- & 
+		& & & & & 
+		& & & & & \\
+		Reactive SAVNav & & & & -- & 
+		& & & & & 
+		& & & & & \\
+		\midrule
+		\textbf{SAVNav (Ours)} & & & & -- & 
+		& & & & & 
+		& & & & & \\
+		\bottomrule
+	\end{tabular}
+	}
+\end{table*}
+
+Compared with Falcon+Goal Oracle, SAVNav primarily improves performance in scenarios where social reasoning must extend beyond LOS observations. This difference is most critical in Hidden Boundary, where Falcon can only react after human agents become visible and therefore cannot reliably avoid blind-corner conflicts. Any reduction in NCR and HCR in this scenario directly reflects the value of acoustic anticipation, not better visual social routing. The same gap remains in Mixed Home Activity, where the policy must balance visible humans with acoustically inferred NLOS risks while still reaching the target.
+
+Compared with ENMuS\textsuperscript{3}, SAVNav tests a different failure mode: socially-unaware target seeking. ENMuS\textsuperscript{3} can use audio to pursue the acoustic target, but it does not convert \texttt{conversation} or \texttt{footsteps} into planner-relevant social boundaries. As a result, its limitations should appear primarily in HCR and PSC rather than in whether it can follow target-related sound cues. This comparison is especially informative in Crowded Social and Mixed Home Activity, where social compliance must be maintained even when the target is acoustically reachable.
+
+The comparison with Reactive SAVNav isolates the effect of persistent structured reasoning. Because both methods share the same perception front-end, the gap between them cannot be attributed to richer sensing alone. Instead, any gains of SAVNav in Hidden Boundary indicate that node-level NLOS risk memory is necessary for stable yielding, while gains in Mixed Home Activity indicate that persistent target reasoning and social reasoning must coexist at the map level rather than being recomputed from scratch at every control cycle.
+
+\subsection{Ablation Study}
+\label{subsec:exp-ablation}
+
+To isolate the contribution of each capability, we evaluate three ablated variants of SAVNav, shown in Table~\ref{tab:ablation_results}. Each variant removes one planner-relevant capability while keeping the rest of the system as fixed as possible, so that the performance drop can be attributed to a missing function rather than to a wholesale redesign.
+
+\begin{table*}[t]
+	\centering
+	\caption{Ablation results on the SAVNav benchmark. `--' denotes scenario-variant combinations that are not applicable or not informative for the corresponding capability. In particular, topology-aware acoustic anticipation is not evaluated in Crowded Social because that scenario contains no NLOS human risk.}
+	\label{tab:ablation_results}
+	\resizebox{\linewidth}{!}{
+	\begin{tabular}{l | ccccc | ccccc | ccccc}
+		\toprule
+		\multirow{2}{*}{Variant} & \multicolumn{5}{c|}{Crowded Social} & \multicolumn{5}{c|}{Hidden Boundary} & \multicolumn{5}{c}{Mixed Home Activity} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11} \cmidrule(lr){12-16}
+		& SR $\uparrow$ & SPL $\uparrow$ & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$ 
+		& SR $\uparrow$ & SPL $\uparrow$ & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$ 
+		& SR $\uparrow$ & SPL $\uparrow$ & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$ \\
+		\midrule
+		w/o Social Cost Layer & & & & -- & 
+		& & & & & 
+		& & & & & \\
+		w/o Topology-Aware Anticipation & -- & -- & -- & -- & -- 
+		& & & & & 
+		& & & & & \\
+		w/o Active Sensory Exploration & -- & -- & -- & -- & -- 
+		& & & & & 
+		& & & & & \\
+		\midrule
+		\textbf{Full SAVNav} & & & & -- & 
+		& & & & & 
+		& & & & & \\
+		\bottomrule
+	\end{tabular}
+	}
+\end{table*}
+
+\subsubsection{w/o Social Cost Fields}
+This variant retains the perception module, target-side reasoning, and the hard collision constraints of the local controller, but removes all social-boundary projection into the planner. In other words, neither LOS humans nor NLOS social acoustic events contribute an explicit social cost field in the FMM speed map. This ablation tests whether social perception must be translated into planner-level spatial structure, rather than being left as an implicit side effect of obstacle avoidance alone. The expected degradation should therefore appear mainly in PSC and HCR, especially in Crowded Social and Mixed Home Activity, where social compliance is a first-class requirement.
+
+\subsubsection{w/o Topology-Aware Acoustic Anticipation}
+This variant preserves social acoustic event detection and planner-side social costs, but removes the node-level reasoning in topology-aware acoustic anticipation. For each unanchored social acoustic event, it casts the current world-frame DOA ray into the traversable map, takes the first reachable ray-hit location, and places only a localized isotropic cost around that point. It does not maintain risk over topological nodes, does not accumulate candidate-node evidence over time, and does not assign an emergence-oriented velocity hypothesis for NLOS DPs. This ablation therefore tests whether NLOS risk can be handled by a topology-oblivious DOA-localized proxy. A large increase in NCR would indicate that blind-corner safety depends on topology-aware emergence reasoning rather than on raw directional localization alone.
+
+\subsubsection{w/o Active Sensory Exploration}
+This variant removes the entire active sensory exploration mechanism and replaces it with greedy target pursuit. It does not maintain a persistent target spatial belief map and does not evaluate candidate viewpoints by information gain. If the acoustic target is anchored, the robot navigates directly to the anchored position; otherwise, it selects the nearest reachable waypoint along the current target DOA and updates this goal reactively when a new detection arrives. This ablation tests whether ambiguity in acoustic target search can be resolved by greedily following instantaneous target cues. Any drop in SR or SPL, especially in Mixed Home Activity, would show that robust target-reaching requires active disambiguation rather than direct pursuit of unstable observations.
+
+\subsection{Qualitative Analysis}
+\label{subsec:exp-qualitative}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1.00\linewidth]{figures/simulation.pdf}
+	\caption{Qualitative navigation trajectories across the three scenarios. (a) In the crowded social scenario, SAVNav proactively routes around a SCG. (b) In the hidden boundary scenario, SAVNav anticipates NLOS footsteps and yields at a blind corner, whereas vision-only and reactive baselines collide. (c) In the mixed home activity scenario, SAVNav balances target search with dynamic yielding.}
+	\label{fig:qualitative_results}
+\end{figure}
+
+Fig.~\ref{fig:qualitative_results} illustrates representative trajectories generated by SAVNav compared to the baselines. In the crowded social scenario, SAVNav generates a smooth, socially compliant path that respects the static interaction zone of the SCG, whereas socially-unaware AVNav interrupts the group. In the hidden boundary scenario, the topology-aware acoustic anticipation allows SAVNav to execute a wide, defensive turn around a blind corner, safely avoiding an approaching DP before establishing LOS. In contrast, Falcon approaches the corner tightly, leading to an NLOS collision.
+
+\subsection{Real-World Experiments}
+\label{subsec:exp-realworld}
+
+% TODO: Hardware setup, scenarios, and sim-to-real transfer results.
+

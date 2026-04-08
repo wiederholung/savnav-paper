@@ -1274,6 +1274,21 @@
   keywords = {3D maps,dynamic environment,image,multimodal mapping,object recognition,point cloud,robotics}
 }
 
+@inproceedings{Matterport3DLearningRGBD2017,
+  title = {{{Matterport3D}}: {{Learning}} from {{RGB-D Data}} in {{Indoor Environments}}},
+  shorttitle = {{{Matterport3D}}},
+  booktitle = {2017 {{International Conference}} on {{3D Vision}} ({{3DV}})},
+  author = {Chang, Angel and Dai, Angela and Funkhouser, Thomas and Halber, Maciej and Niebner, Matthias and Savva, Manolis and Song, Shuran and Zeng, Andy and Zhang, Yinda},
+  year = 2017,
+  month = oct,
+  pages = {667--676},
+  issn = {2475-7888},
+  doi = {10.1109/3DV.2017.00081},
+  urldate = {2026-04-03},
+  abstract = {Access to large, diverse RGB-D datasets is critical for training RGB-D scene understanding algorithms. However, existing datasets still cover only a limited number of views or a restricted scale of spaces. In this paper, we introduce Matterport3D, a large-scale RGB-D dataset containing 10,800 panoramic views from 194,400 RGB-D images of 90 building-scale scenes. Annotations are provided with surface reconstructions, camera poses, and 2D and 3D semantic segmentations. The precise global alignment and comprehensive, diverse panoramic set of views over entire buildings enable a variety of supervised and self-supervised computer vision tasks, including keypoint matching, view overlap prediction, normal prediction from color, semantic segmentation, and region classification.},
+  keywords = {Buildings,Cameras,Image reconstruction,Semantics,Surface reconstruction,Task analysis,Three-dimensional displays}
+}
+
 @inproceedings{MIntRec20LargescaleBenchmark2024,
   title = {{{MIntRec2}}.0: A Large-Scale Benchmark Dataset for Multimodal Intent Recognition and out-of-Scope Detection in Conversations},
   shorttitle = {{{MIntRec2}}.0},
@@ -2421,6 +2436,23 @@
   keywords = {Cameras,Natural languages,Navigation,Robots,Task analysis,Three-dimensional displays,Visualization}
 }
 
+@misc{VisionSoundLanguageActionParadigmHEAR2026,
+  title = {Towards the {{Vision-Sound-Language-Action Paradigm}}: {{The HEAR Framework}} for {{Sound-Centric Manipulation}}},
+  shorttitle = {Towards the {{Vision-Sound-Language-Action Paradigm}}},
+  author = {Nie, Chang and Deng, Tianchen and Wang, Guangming and Liu, Zhe and Wang, Hesheng},
+  year = 2026,
+  month = mar,
+  number = {arXiv:2603.16086},
+  eprint = {2603.16086},
+  primaryclass = {cs},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.2603.16086},
+  urldate = {2026-04-03},
+  abstract = {While recent Vision-Language-Action (VLA) models have begun to incorporate audio, they typically treat sound as static pre-execution prompts or focus exclusively on human speech. This leaves a significant gap in real-time, sound-centric manipulation where fleeting environmental acoustics provide critical state verification during task execution. Consequently, key sounds are easily missed due to low-frequency updates or system latency. This problem is exacerbated by action chunking with open-loop execution, which creates a Blind Execution Interval where acoustic events are lost between discrete audio observation windows. Recognizing the necessity of continuous auditory awareness, we formalize Vision-Sound-Language-Action (VSLA) as a continuous control paradigm conditioned on vision, streaming audio, language, and proprioception under delayed decision loops. As an instantiation, we introduce HEAR, a VSLA framework integrating four components: (i) a streaming Historizer to maintain a compact, causal audio context across execution gaps; (ii) an Envisioner adapted from omni foundation models to reason over multi-sensory inputs; (iii) an Advancer, formulated as an audio world model, to learn temporal dynamics by predicting near-future audio codes; and (iv) a flow-matching Realizer policy to generate smooth action chunks. To address the scarcity of pretraining data and evaluations for VSLA, we construct OpenX-Sound for pretraining, alongside HEAR-Bench, the first sound-centric manipulation benchmark with strict causal timing rules. Our results suggest that robust sound-centric manipulation necessitates causal persistence and explicit temporal learning. This framework provides a practical step toward multi-sensory foundation models for embodied agents, enabling robots to perceive and interact with dynamic environments. Code and videos are available at https://hear.irmv.top.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Artificial Intelligence,Computer Science - Computer Vision and Pattern Recognition,Computer Science - Robotics,Computer Science - Sound}
+}
+
 @inproceedings{VisualLanguageMaps2023,
   title = {Visual Language Maps for Robot Navigation},
   booktitle = {2023 {{IEEE International Conference}} on {{Robotics}} and {{Automation}} ({{ICRA}})},
@@ -2437,6 +2469,24 @@
   isbn = {979-8-3503-2365-8},
   langid = {english},
   keywords = {Grounding,Meters,Natural languages,Navigation,Three-dimensional displays,TV,Visualization}
+}
+
+@inproceedings{VLFMVisionLanguageFrontier2024,
+  title = {{{VLFM}}: {{Vision-Language Frontier Maps}} for {{Zero-Shot Semantic Navigation}}},
+  shorttitle = {{{VLFM}}},
+  booktitle = {2024 {{IEEE International Conference}} on {{Robotics}} and {{Automation}} ({{ICRA}})},
+  author = {Yokoyama, Naoki and Ha, Sehoon and Batra, Dhruv and Wang, Jiuguang and Bucher, Bernadette},
+  year = 2024,
+  month = may,
+  pages = {42--48},
+  publisher = {IEEE},
+  address = {Yokohama, Japan},
+  doi = {10.1109/ICRA57147.2024.10610712},
+  urldate = {2026-04-07},
+  abstract = {Understanding how humans leverage semantic knowledge to navigate unfamiliar environments and decide where to explore next is pivotal for developing robots capable of human-like search behaviors. We introduce a zero-shot navigation approach, Vision-Language Frontier Maps (VLFM), which is inspired by human reasoning and designed to navigate towards unseen semantic objects in novel environments. VLFM builds occupancy maps from depth observations to identify frontiers, and leverages RGB observations and a pre-trained vision-language model to generate a language-grounded value map. VLFM then uses this map to identify the most promising frontier to explore for finding an instance of a given target object category. We evaluate VLFM in photo-realistic environments from the Gibson, Habitat-Matterport 3D (HM3D), and Matterport 3D (MP3D) datasets within the Habitat simulator. Remarkably, VLFM achieves state-of-the-art results on all three datasets as measured by success weighted by path length (SPL) for the Object Goal Navigation task. Furthermore, we show that VLFM's zero-shot nature enables it to be readily deployed on real-world robots such as the Boston Dynamics Spot mobile manipulation platform. We deploy VLFM on Spot and demonstrate its capability to efficiently navigate to target objects within an office building in the real world, without any prior knowledge of the environment. The accomplishments of VLFM underscore the promising potential of vision-language models in advancing the field of semantic navigation. Videos of real world deployment can be viewed at naoki.io/vlfm.},
+  copyright = {https://doi.org/10.15223/policy-029},
+  isbn = {979-8-3503-8457-4},
+  langid = {english}
 }
 
 @article{VLMsocialnavSociallyAware2025,

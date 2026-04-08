@@ -30,10 +30,10 @@ Version: 1.2.1
 ## 2. Capitalization and Naming Form
 
 - 外部专有名称保持官方大小写，如 `ImageBind`、`YOLO26`、`AudioGoal`；如有缩写，首次出现时写全称加缩写，如 `contrastive language-audio pretraining (CLAP)`。
-- 正文中的内部模块名、机制名、地图名、代价场名使用 sentence case；不要仅为强调而写成 Title Case 或 CamelCase。
+- 正文中的内部模块名、机制名、地图名、代价场名使用 sentence case；禁止为强调而写成 Title Case 或 CamelCase。
 - 内部术语在正文首次引入缩写时，全称仍保持小写，如 `multi-modal perception (MMP)`；不要写成 `Multi-Modal Perception (MMP)`，除非该短语位于标题、列表引导短语或图中标签。
 - 标题与列表引导短语中的标题性短语可使用 Title Case；普通叙述句中的内部术语保持小写。
-- 状态名、离散类别名、指令标签使用 `\texttt{}`，如 `\texttt{doorbell}`、`\texttt{STOP}`。
+- 状态名、离散类别名、指令标签使用 `\texttt{}`，如 `\texttt{doorbell}`、`\texttt{stop}`。
 - 不为避免重复而随意替换同一概念的表面写法；若同一对象已有固定写法，优先复用既有表达。
 - 不把普通描述性短语包装成看似专有名词的写法；只有已登记的固定名称或缩写才应表现为专名。
 
@@ -98,7 +98,7 @@ Version: 1.2.1
 
 ## 6. References, Captions, and Punctuation
 
-- 图、表、章节、公式、文献引用前使用不可断行空格 `~`，如 `Fig.~\ref{...}`、`Table~\ref{...}`、`Sec.~\ref{...}`、`Eq.~\eqref{...}`、`Method~\cite{...}`。
+- 图、表、章节、公式、文献引用前使用不可断行空格 `~`，如 `Fig.~\ref{...}`、`Table~\ref{...}`、`Section~\ref{...}`、`Eq.~\eqref{...}`、`Method~\cite{...}`。
 - 关键外部方法、模型或数据集在每个主要章节首次出现时重新给出 `\cite{...}`，便于跳读；但同一段落或紧邻上下文中避免重复堆叠引用。
 - 图注或表注中提及关键外部方法、模型或数据集时，若该信息对独立理解图表是必要的，应在该 caption 中补上 `\cite{...}`。
 - 图表 caption 应尽量做到脱离正文也能理解；不要让 caption 依赖正文中的缩写定义、术语解释或文献上下文。
