@@ -98,7 +98,8 @@ Version: 1.2.1
 
 ## 6. References, Captions, and Punctuation
 
-- 图、表、章节、公式、文献引用前使用不可断行空格 `~`，如 `Fig.~\ref{...}`、`Table~\ref{...}`、`Section~\ref{...}`、`Eq.~\eqref{...}`、`Method~\cite{...}`。
+- 图、表、章节、公式、文献引用前使用不可断行空格 `~`，如 `Fig.~\ref{...}`、`Table~\ref{...}`、`Section~\ref{...}`、`Method~\cite{...}`。
+- 正文引用公式时写 `~\eqref{...}`；不要使用 `Eq.` 或 `equation`，只有句首可用 `Equation~\eqref{...}`。
 - 关键外部方法、模型或数据集在每个主要章节首次出现时重新给出 `\cite{...}`，便于跳读；但同一段落或紧邻上下文中避免重复堆叠引用。
 - 图注或表注中提及关键外部方法、模型或数据集时，若该信息对独立理解图表是必要的，应在该 caption 中补上 `\cite{...}`。
 - 图表 caption 应尽量做到脱离正文也能理解；不要让 caption 依赖正文中的缩写定义、术语解释或文献上下文。
