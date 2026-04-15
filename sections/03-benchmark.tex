@@ -6,7 +6,7 @@ We introduce a benchmark for the SAVNav task, in which an embodied agent must na
 \subsection{Task Definition and Scenarios}
 \label{subsec:benchmark-task}
 
-The SAVNav task is situated in continuous indoor environments populated by static obstacles and dynamic human actors. The environment generates two classes of auditory signals: target acoustic events emitted by specific objects (e.g., doorbells, televisions) or humans (e.g., a human verbally calling the agent), and social acoustic events (e.g., footsteps, conversations) emitted continuously or intermittently by human actors. 
+The SAVNav task is situated in continuous indoor environments populated by static obstacles and dynamic human actors. The environment generates two classes of auditory signals: target acoustic events emitted by specific objects (e.g., doorbells, televisions) or humans (e.g., a human verbally calling the agent), and social acoustic events (e.g., footsteps, conversations) emitted continuously or intermittently by human actors.
 
 The objective of the embodied agent is to navigate to the designated acoustic target using egocentric visual and auditory sensors, alongside real-time pose estimation and a pre-computed map of the static environment. Crucially, the agent must treat the social acoustic events as boundaries. The agent does not have access to the ground-truth locations or trajectories of the human actors and must infer their presence—even when fully occluded by walls or corners—proactively yielding to avoid collisions and personal space violations.
 
@@ -20,7 +20,7 @@ To evaluate the agent across different physical and social contexts, we structur
 
 \begin{table}[t]
 	\centering
-	\caption{SAVNav benchmark scenarios. The taxonomy separates LOS social routing (Crowded Social), NLOS acoustic anticipation (Hidden Boundary), and mixed domestic settings (Mixed Home Activity). The social composition defines the allowable combinations of SCGs and DPs, excluding the potential target human.}
+	\caption{The SAVNav benchmark comprises three scenarios: crowded social, hidden boundary, and mixed home activity. Social composition specifies distractor stationary conversational groups (SCGs) and dynamic pedestrians (DPs) across line-of-sight (LOS) and non-line-of-sight (NLOS) conditions, excluding the human acoustic target.}
 	\label{tab:benchmark_tiers}
 	\resizebox{\linewidth}{!}{
 		\begin{tabular}{lccl}
@@ -54,8 +54,8 @@ For the crowded social scenario, humans are spawned within the main topological 
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=1.00\linewidth]{figures/sim.png}
-	\caption{Illustration of the simulation environment and episode generation protocol. The benchmark explicitly couples acoustic targets, multi-agent human trajectories, and precise raycast-verified NLOS conditions.}
+	\includegraphics[width=0.50\linewidth]{figures/sim.png}
+	\caption{\#TODO. Illustration of the simulation environment and episodes generated for the three SAVNav scenarios.}
 	\label{fig:benchmark_sim}
 \end{figure}
 
@@ -65,20 +65,11 @@ For the crowded social scenario, humans are spawned within the main topological 
 We evaluate the navigation system across three dimensions: task completion, human safety, and social compliance. Notably, reaching the target does not inherently imply safety, necessitating distinct social metrics.
 
 \begin{enumerate}
-	\item \textit{Task Completion:}
-	      \begin{enumerate}
-		      \item \textit{Success Rate (SR):} An episode is counted as a success if the agent executes the \texttt{stop} action within the maximum allowable time steps ($T_{\mathrm{max}}=500$) and its final distance to the acoustic target is $\le 1.0\,\mathrm{m}$ without colliding with any human actor. Human collisions result in immediate episode failure.
-		      \item \textit{Success weighted by Path Length (SPL):} Measures navigation efficiency relative to the shortest traversable path and penalizes unnecessary detours.
-	      \end{enumerate}
-	\item \textit{Human Safety:}
-	      \begin{enumerate}
-		      \item \textit{Human Collision Rate (HCR):} The fraction of episodes in which the agent collides with a human actor.
-		      \item \textit{NLOS Collision Rate (NCR):} The fraction of episodes terminating in a collision with a human who has been within the agent's camera field of view (FOV) for less than $1.0\,\mathrm{s}$ prior to the impact. It quantifies the system's ability to avoid abrupt dynamic obstacles emerging from NLOS regions.
-	      \end{enumerate}
-	\item \textit{Social Compliance:}
-	      \begin{enumerate}
-		      \item \textit{Personal Space Compliance (PSC):} A measure of adherence to human social comfort zones. Following Falcon~\cite{CognitionPrecognitionFutureaware2025}, the social distance threshold is uniformly set to $1.0\,\mathrm{m}$ for all humans (dynamic or static), and the metric captures the fraction of time the agent maintains at least this distance relative to the episode length.
-	      \end{enumerate}
+	\item \textit{Success Rate (SR):} An episode is counted as a success if the agent executes the \texttt{stop} action within the maximum allowable time steps ($T_{\mathrm{max}}=500$) and its final distance to the acoustic target is $\le 1.0\,\mathrm{m}$ without colliding with any human actor. Human collisions result in immediate episode failure.
+	\item \textit{Success weighted by Path Length (SPL):} Measures navigation efficiency relative to the shortest traversable path and penalizes unnecessary detours.
+	\item \textit{Human Collision Rate (HCR):} The fraction of episodes in which the agent collides with a human actor.
+	\item \textit{NLOS Collision Rate (NCR):} The fraction of episodes terminating in a collision with a human who has been within the agent's camera field of view (FOV) for less than $1.0\,\mathrm{s}$ prior to the impact. It quantifies the system's ability to avoid abrupt dynamic obstacles emerging from NLOS regions.
+	\item \textit{Personal Space Compliance (PSC):} A measure of adherence to human social comfort zones. Following Falcon~\cite{CognitionPrecognitionFutureaware2025}, the social distance threshold is uniformly set to $1.0\,\mathrm{m}$ for all humans (dynamic or static), and the metric captures the fraction of time the agent maintains at least this distance relative to the episode length.
 \end{enumerate}
 
 % \subsection{Comparison with Existing Benchmarks}

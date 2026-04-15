@@ -959,23 +959,6 @@
   langid = {english}
 }
 
-@article{HeterogeneousEmbodiedMultiagent2024,
-  title = {Heterogeneous Embodied Multi-Agent Collaboration},
-  author = {Liu, Xinzhu and Guo, Di and Zhang, Xinyu and Liu, Huaping},
-  year = 2024,
-  month = jun,
-  journal = {IEEE Robotics and Automation Letters},
-  volume = {9},
-  number = {6},
-  pages = {5377--5384},
-  issn = {2377-3766, 2377-3774},
-  doi = {10.1109/LRA.2024.3390588},
-  urldate = {2026-03-26},
-  copyright = {https://ieeexplore.ieee.org/Xplorehelp/downloads/license-information/IEEE.html},
-  langid = {english},
-  keywords = {Benchmark testing,Cognition,Collaboration,Heterogeneous collaboration,multi-agent collaboration,multi-agent tidying-up task,Navigation,Planning,Task analysis,Visualization}
-}
-
 @inproceedings{HierarchicalOpenvocabulary3D2024,
   title = {Hierarchical Open-Vocabulary {{3D}} Scene Graphs for Language-Grounded Robot Navigation},
   booktitle = {Robotics: {{Science}} and {{Systems XX}}},
@@ -1423,6 +1406,24 @@
   keywords = {Acoustics,Adaptation models,audio-visual fusion,Data augmentation,Direction-of-arrival estimation,Estimation,Location awareness,multi-stage attention,Signal processing,Solid modeling,Sound event localization and detection,source Cartesian coordinates,Speech processing,Three-dimensional displays}
 }
 
+@article{NavRLLearningSafe2025,
+  title = {{{NavRL}}: Learning Safe Flight in Dynamic Environments},
+  shorttitle = {{{NavRL}}},
+  author = {Xu, Zhefan and Han, Xinming and Shen, Haoyu and Jin, Hanyu and Shimada, Kenji},
+  year = 2025,
+  month = apr,
+  journal = {IEEE Robotics and Automation Letters},
+  volume = {10},
+  number = {4},
+  pages = {3668--3675},
+  issn = {2377-3766},
+  doi = {10.1109/LRA.2025.3546069},
+  urldate = {2026-04-14},
+  abstract = {Safe flight in dynamic environments requires unmanned aerial vehicles (UAVs) to make effective decisions when navigating cluttered spaces with moving obstacles. Traditional approaches often decompose decision-making into hierarchical modules for prediction and planning. Although these handcrafted systems can perform well in specific settings, they might fail if environmental conditions change and often require careful parameter tuning. Additionally, their solutions could be suboptimal due to the use of inaccurate mathematical model assumptions and simplifications aimed at achieving computational efficiency. To overcome these limitations, this letter introduces the NavRL framework, a deep reinforcement learning-based navigation method built on the Proximal Policy Optimization (PPO) algorithm. NavRL utilizes our carefully designed state and action representations, allowing the learned policy to make safe decisions in the presence of both static and dynamic obstacles, with zero-shot transfer from simulation to real-world flight. Furthermore, the proposed method adopts a simple but effective safety shield for the trained policy, inspired by the concept of velocity obstacles, to mitigate potential failures associated with the black-box nature of neural networks. To accelerate the convergence, we implement the training pipeline using NVIDIA Isaac Sim, enabling parallel training with thousands of quadcopters. Simulation and physical experiments show that our method ensures safe navigation in dynamic environments and results in the fewest collisions compared to benchmarks.},
+  langid = {english},
+  keywords = {Aerial systems: Perception and autonomy,Autonomous aerial vehicles,collision avoidance,Collision avoidance,Detectors,Heuristic algorithms,Learning systems,Navigation,reinforcement learning,Robots,Safety,Training,Vehicle dynamics}
+}
+
 @techreport{NercslipSystemStereo2025,
   title = {The Nerc-Slip System for Stereo Sound Event Localization and Detection in Regular Video Content of Dcase 2025 Challenge},
   author = {Wang, Qing and Hong, Hengyi and Wei, Ruoyu and Li, Lin and Dong, Yuxuan and Cai, Mingqi and Fang, Xin and Wu, Jiangzhao and Du, Jun},
@@ -1448,6 +1449,23 @@
   archiveprefix = {arXiv},
   langid = {english},
   keywords = {Computer Science - Computer Vision and Pattern Recognition,Computer Science - Robotics}
+}
+
+@article{ObstaclesEtiquetteRobot2026,
+  title = {From {{Obstacles}} to {{Etiquette}}: {{Robot Social Navigation With VLM-Informed Path Selection}}},
+  shorttitle = {From {{Obstacles}} to {{Etiquette}}},
+  author = {Fang, Zilin and Xiao, Anxing and Hsu, David and Lee, Gim Hee},
+  year = 2026,
+  month = apr,
+  journal = {IEEE Robotics and Automation Letters},
+  volume = {11},
+  number = {4},
+  pages = {3947--3954},
+  issn = {2377-3766},
+  doi = {10.1109/LRA.2026.3662586},
+  urldate = {2026-04-14},
+  abstract = {Navigating socially in human environments requires more than satisfying geometric constraints, as collision-free paths may still interfere with ongoing activities or conflict with social norms. Addressing this challenge calls for analyzing interactions between agents and incorporating common-sense reasoning into planning. This paper presents a social robot navigation framework that integrates geometric planning with contextual social reasoning. The system first extracts obstacles and human dynamics to generate geometrically feasible candidate paths, then leverages a fine-tuned vision-language model (VLM) to evaluate these paths, informed by contextually grounded social expectations, selecting a socially optimized path for the controller. This task-specific VLM distills social reasoning from large foundation models into a smaller and efficient model, allowing the framework to perform real-time adaptation in diverse human--robot interaction contexts. Experiments in four social navigation contexts demonstrate that our method achieves the best overall performance with the lowest personal space violation duration, the minimal pedestrian-facing time, and no social zone intrusions.},
+  keywords = {Adaptation models,AI-enabled robotics,behavior-based systems,Collision avoidance,Costs,Foundation models,Navigation,Planning,Real-time systems,Robot sensing systems,Semantics,Social robots,vision-based navigation}
 }
 
 @inproceedings{OmnidirectionalInformationGathering2023,
@@ -1796,6 +1814,24 @@
   publisher = {PMLR},
   abstract = {We study how vision-language models trained on Internet-scale data can be incorporated directly into end-to-end robotic control to boost generalization and enable emergent semantic reasoning. Our goal is to enable a single end-to-end trained model to both learn to map robot observations to actions and enjoy the benefits of large-scale pretraining on language and vision-language data from the web. To this end, we propose to co-fine-tune state-of-the-art vision-language models on both robotic trajectory data and Internet-scale vision-language tasks, such as visual question answering. In contrast to other approaches, we propose a simple, general recipe to achieve this goal: in order to fit both natural language responses and robotic actions into the same format, we express the actions as text tokens and incorporate them directly into the training set of the model in the same way as natural language tokens. We refer to such category of models as vision-language-action models (VLA) and instantiate an example of such a model, which we call RT-2. Our extensive evaluation (6k evaluation trials) shows that our approach leads to performant robotic policies and enables RT-2 to obtain a range of emergent capabilities from Internet-scale training. This includes significantly improved generalization to novel objects, the ability to interpret commands not present in the robot training data (such as placing an object onto a particular number or icon), and the ability to perform rudimentary reasoning in response to user commands (such as picking up the smallest or largest object, or the one closest to another object). We further show that incorporating chain of thought reasoning allows RT-2 to perform multi-stage semantic reasoning, for example figuring out which object to pick up for use as an improvised hammer (a rock), or which type of drink is best suited for someone who is tired (an energy drink).},
   langid = {english}
+}
+
+@article{SafeNavigationState2026,
+  title = {Safe Navigation under State Uncertainty: Online Adaptation for Robust Control Barrier Functions},
+  shorttitle = {Safe Navigation under State Uncertainty},
+  author = {Da{\c s}, Ersin and Nanayakkara, Rahal and Tan, Xiao and Bena, Ryan M. and Burdick, Joel W. and Tabuada, Paulo and Ames, Aaron D.},
+  year = 2026,
+  month = mar,
+  journal = {IEEE Robotics and Automation Letters},
+  volume = {11},
+  number = {3},
+  pages = {3398--3405},
+  issn = {2377-3766},
+  doi = {10.1109/LRA.2026.3653366},
+  urldate = {2026-04-14},
+  abstract = {Measurements and state estimates are often imperfect in control practice, posing challenges for safety-critical applications, where safety guarantees rely on accurate state information. In the presence of estimation errors, several prior robust control barrier function (R-CBF) formulations have imposed strict conditions on the input. These methods can be overly conservative and can introduce issues such as infeasibility, high control effort, etc. This work proposes a systematic method to improve R-CBFs, and demonstrates its advantages on a tracked vehicle that navigates among multiple obstacles. A primary contribution is a new optimization-based online parameter adaptation scheme that reduces the conservativeness of existing R-CBFs. In order to reduce the complexity of the parameter optimization, we merge several safety constraints into one unified numerical CBF via Poisson's equation. We further address the dual relative degree issue that typically causes difficulty in vehicle tracking. Experimental trials demonstrate the overall performance improvement of our approach over existing formulations.},
+  langid = {english},
+  keywords = {Angular velocity,constrained control,control barrier functions,Filters,Mobile robots,Navigation,Poisson equations,Robust control,robust nonlinear control,Robustness,Safe navigation,Safety,State estimation,state uncertainty,Uncertainty}
 }
 
 @inproceedings{SALMONNGenericHearing2023,
@@ -2327,24 +2363,6 @@
   keywords = {No DOI found}
 }
 
-@article{TinyVLAFastDataefficient2025,
-  title = {{{TinyVLA}}: Toward Fast, Data-Efficient Vision-Language-Action Models for Robotic Manipulation},
-  shorttitle = {{{TinyVLA}}},
-  author = {Wen, Junjie and Zhu, Yichen and Li, Jinming and Zhu, Minjie and Tang, Zhibin and Wu, Kun and Xu, Zhiyuan and Liu, Ning and Cheng, Ran and Shen, Chaomin and Peng, Yaxin and Feng, Feifei and Tang, Jian},
-  year = 2025,
-  month = apr,
-  journal = {IEEE Robotics and Automation Letters},
-  volume = {10},
-  number = {4},
-  pages = {3988--3995},
-  issn = {2377-3766, 2377-3774},
-  doi = {10.1109/LRA.2025.3544909},
-  urldate = {2026-03-26},
-  copyright = {https://ieeexplore.ieee.org/Xplorehelp/downloads/license-information/IEEE.html},
-  langid = {english},
-  keywords = {Adaptation models,AI-based method,Data models,deep learning in grasping and manipulation,Diffusion models,Multitasking,Pipelines,Predictive models,Robot learning,Robots,Training,Transformers}
-}
-
 @article{TranscriptionFactorZNF2632025,
   title = {Transcription Factor {{ZNF263}} Primes Human Embryonic Stem Cells for Pluripotency Dissolution and Lineage Commitment},
   author = {Yin, Qianqian and Huang, Jing and Sun, Hongduo and Zhou, Shuhan and Ruan, Linjie and Zeng, Yi and Li, Yana and Gong, Zhaohui and Chen, Peiyu and Yuan, Xinbo and Wan, Jiafang and Wang, Qingzhong and Wang, Yuangao and Li, Haipeng and Jing, Naihe and Liu, Xin and Shao, Zhen},
@@ -2597,23 +2615,4 @@
   copyright = {https://doi.org/10.15223/policy-029},
   isbn = {979-8-3503-5300-6},
   langid = {english}
-}
-
-@article{YouOnlyPlan2024,
-  title = {You Only Plan Once: A Learning-Based One-Stage Planner with Guidance Learning},
-  shorttitle = {You Only Plan Once},
-  author = {Lu, Junjie and Zhang, Xuewei and Shen, Hongming and Xu, Liwen and Tian, Bailing},
-  year = 2024,
-  month = jul,
-  journal = {IEEE Robotics and Automation Letters},
-  volume = {9},
-  number = {7},
-  pages = {6083--6090},
-  issn = {2377-3766, 2377-3774},
-  doi = {10.1109/LRA.2024.3399589},
-  urldate = {2026-03-26},
-  abstract = {In this work, we propose a learning-based one-stage planner for trajectory generation of quadrotor in obstacle-cluttered environment without relying on explicit map. We integrate perception and mapping, front-end path searching, and back-end optimization into a single network. We frame the motion planning problem as a regression of spatially separated polynomial trajectories and associated scores. Specifically, our approach adopts a set of motion primitives to cover the searching space, and predicts the offsets and scores of primitives for local optimization in a single forward propagation. A novel unsupervised learning strategy, termed guidance learning, is developed to provide numerical gradients as the guidance for training. We train the network policy with privileged information about the surroundings while only the noisy depth observations are available during inference. Finally, a series of experiments are conducted to demonstrate the effectiveness and time-efficiency of the proposed method in both simulation and real-world.},
-  copyright = {https://ieeexplore.ieee.org/Xplorehelp/downloads/license-information/IEEE.html},
-  langid = {english},
-  keywords = {aerial systems,collision avoidance,Integrated planning and learning,Navigation,perception and autonomy,Planning,Polynomials,Reinforcement learning,Supervised learning,Training,Trajectory}
 }
