@@ -11,21 +11,22 @@
 
 描述环境中客观存在的实体与事件设定。
 
-| Term                            | Abbrev. | Definition (ZH)                                                                                           |
-| :------------------------------ | :------ | :-------------------------------------------------------------------------------------------------------- |
-| SAVNav                          | SAVNav  | 整个 socially-aware audio-visual navigation 任务、方法与系统的统称                                        |
-| embodied agent                  | -       | 具身智能体（任务定义阶段，泛指执行该类任务的 AI 系统）                                                    |
-| robot                           | -       | 机器人（方法与实验阶段，特指执行导航策略的实体，代表自我视角）                                            |
-| human actor                     | -       | 环境中客观存在的人类个体（符号 $H$），其行为模式必然隶属于 DP 或 SCG 两类之一                             |
-| static object                   | -       | 源于环境本身的静态物理对象（符号 $o$），如门、电视等，可作为目标声音的对应源                              |
-| acoustic event                  | -       | 客观发生的声音事件实例（符号 $A$），由 $H$ 或 $o$ 产生，其语义类别属于 target 或 social                   |
-| target acoustic event           | -       | 声音类别的大类之一（类标属于 $\mathcal{L}_{\mathrm{target}}$的事件），指代导航最终目标，全局至有且只有1个 |
-| social acoustic event           | -       | 声音类别的大类之一（类标属于 $\mathcal{L}_{\mathrm{social}}$的事件）                                      |
-| stationary conversational group | SCG     | 静态交谈群体                                                                                              |
-| dynamic pedestrian              | DP      | 运动中的行人                                                                                              |
-| social boundary                 | -       | 机器人应避免侵犯的社会规矩边界                                                                            |
-| line-of-sight                   | LOS     | 视距内，指实体在视觉传感器的直接可视范围内                                                                |
-| non-line-of-sight               | NLOS    | 非视距，指实体被遮挡或尚未进入视觉传感器视野的状态                                                        |
+| Term                            | Abbrev. | Definition (ZH)                                                                         |
+| :------------------------------ | :------ | :-------------------------------------------------------------------------------------- |
+| SAVNav                          | SAVNav  | 整个 socially-aware audio-visual navigation 任务、方法与系统的统称                      |
+| embodied agent                  | -       | 具身智能体（任务定义阶段，泛指执行该类任务的 AI 系统）                                  |
+| robot                           | -       | 机器人（方法与实验阶段，特指执行导航策略的实体，代表自我视角）                          |
+| human actor                     | -       | 环境中客观存在的人类个体（符号 $h$），其行为模式必然隶属于 DP 或 SCG 两类之一           |
+| static object                   | -       | 源于环境本身的静态物理对象（符号 $o$），如门、电视等，可作为目标声音的对应源            |
+| acoustic target                 | -       | 指代导航最终目标                                                                        |
+| sound event                     | -       | 客观发生的声音事件实例（符号 $a$），由 $h$ 或 $o$ 产生，其语义类别属于 target 或 social |
+| target sound event              | -       | 声音类别的大类之一（类标属于 $\mathcal{L}_{\mathrm{target}}$的事件，全局至有且只有1个） |
+| social sound event              | -       | 声音类别的大类之一（类标属于 $\mathcal{L}_{\mathrm{social}}$的事件）                    |
+| stationary conversational group | SCG     | 静态交谈群体                                                                            |
+| dynamic pedestrian              | DP      | 运动中的行人                                                                            |
+| social boundary                 | -       | 机器人应避免侵犯的社会规矩边界                                                          |
+| line-of-sight                   | LOS     | 视距内，指实体在视觉传感器的直接可视范围内                                              |
+| non-line-of-sight               | NLOS    | 非视距，指实体被遮挡或尚未进入视觉传感器视野的状态                                      |
 
 ## 2. Perception Layer (感知层)
 
@@ -138,7 +139,7 @@
 | $B^{(t)}(\mathbf{x})$                   | 时刻 $t$ 目标信念网格 (target belief map)，用于维护空域上目标隐现概率的对数赔率 (log-odds)                                      |
 | $F(\mathbf{x}), F_{\max}, F_{\min}$     | (取代原 $S(\mathbf{x})$) FMM 前向波传播规划所用的可行驶速度场 (speed map)，采用 Fast Marching 标准                              |
 | $U^{(t)}(\mathbf{p}_i)$                 | 时刻 $t$ 对候选视点 $\mathbf{p}_i$ 计算的综合主动探索效用得分 (utility score)                                                   |
-| $d_{\mathrm{success}}$                  | 判断任务成功时，机器人与认定目标的静态距离阈值参数                                                                              |
+| $T, d_{\mathrm{success}}$               | episode 最大时间步数；判断任务成功时，机器人与认定目标的静态距离阈值参数                                                        |
 
 ## 7. Maintenance Notes
 
