@@ -6,14 +6,14 @@
 
 根据确定的核心贡献（解决失聪社交导航与非社会化视听导航的局限），结合现有草图，计划进行以下修改：
 
-- [ ] **转换第一人称视角 (The robot -> I)**: 将说明性文本改为智能体的思考，增强具身表现力。参考文案：
+<!-- - [ ] **转换第一人称视角 (The robot -> I)**: 将说明性文本改为智能体的思考，增强具身表现力。参考文案：
   - _Help_: "I hear someone calling for help behind the wall. I should explore there."
   - _Chatting_: "I hear them chatting. I should keep a polite distance and not interrupt."
   - _Footsteps (visible)_: "I hear footsteps and see a person. I should yield to avoid collision."
-  - _Footsteps (unseen)_: "I hear footsteps around the corner. I should be cautious."
-- [ ] **改为思考气泡 (Thought Bubbles)**: 将现有的蓝色方框替换成漫画式的思考气泡（），从机器人头部冒出，分别指向不同的声音事件，体现机器人的多线程感知与推理。
-- [ ] **补充干扰声的声音锥体 (Social/Risk Cones)**: 图中目前仅为目标(Help)画了橙色声音锥体。为了体现社交合规性，应为 _Chatting_ 和 _Footsteps_ 也添加声音锥体/波纹（建议用区别于目标的颜色，如黄色或红色半透明），直观表现被声音扩张的社交空间/虚拟墙。
-- [ ] **[强烈建议] 绘制对比轨迹 (Trajectory Contrast)**: 增加一条直接穿过聊天人群或盲区脚步声的**红色细虚线**（代表传统 AV Nav 的生硬行径并打上），与图中当前的**蓝色实线**（代表 SAVNav 绕过社交区的优雅路线）形成强烈对比，一图切中论文核心。
+  - _Footsteps (unseen)_: "I hear footsteps around the corner. I should be cautious." -->
+- [x] **改为思考气泡 (Thought Bubbles)**: 将现有的蓝色方框替换成漫画式的思考气泡（），从机器人头部冒出，分别指向不同的声音事件，体现机器人的多线程感知与推理。
+- [x] **补充干扰声的声音锥体 (Social/Risk Cones)**: 图中目前仅为目标(Help)画了橙色声音锥体。为了体现社交合规性，应为 _Chatting_ 和 _Footsteps_ 也添加声音锥体/波纹（建议用区别于目标的颜色，如黄色或红色半透明），直观表现被声音扩张的社交空间/虚拟墙。
+- [x] **[强烈建议] 绘制对比轨迹 (Trajectory Contrast)**: 增加一条直接穿过聊天人群或盲区脚步声的**红色细虚线**（代表传统 AV Nav 的生硬行径并打上），与图中当前的**蓝色实线**（代表 SAVNav 绕过社交区的优雅路线）形成强烈对比，一图切中论文核心。
 - [x] caption 要改，叫...framework不合适。
 
 ### 方法图
@@ -29,7 +29,7 @@
 
 ## related work
 
--[] 相关工作：社交导航、声音导航、主动听觉感知
+-[x] 相关工作：社交导航、声音导航、主动听觉感知
 
 ## benchmark
 
@@ -46,7 +46,7 @@
 - [x] SIT和PSV合并成PSV，对移动和静止的人都生效
 - [x] 缩写问题，不要沿用我的SC MF，重新设计，符合学术规范
 - [x] table-1，改
-- [ ] 与其他任务对比的表格，等related work部分写完后再做更新
+<!-- - [ ] 与其他任务对比的表格，等related work部分写完后再做更新 -->
 - [x] 声音的仿真，（soundspace）再详细说明
 - [x] 人数补充说明
 - [x] 再过一遍merics
@@ -73,6 +73,7 @@
 ## experiment
 
 - [x] 打磨语言
+- [ ] 实验结果精炼语言
 
 ## conclusion
 
@@ -82,22 +83,21 @@
 - [x] 不少学术术语（如“Hallucination”）质感不够或者太ai，要打磨；信息论主动搜索能不能包装成贝叶斯推理
 - [x] 不确定性？
 - [x] falcon贴墙
-- [ ] 改题目
+- [x] 改题目: Listen to Yield
 - [x] 更新savnav_impl.md方法实现细节
-- [ ] 更新所有caption和表格标题
+- [x] 更新所有caption和表格标题
 - [x] 这不仅涉及公式，同时解释不要硬翻中文，源头风险逼近速度假说矢量这种可以用论文英文原文
 - [x] 更新实现文档
 - [x] 统一robot、agent的称呼
 - [x] 引言与方法仍有轻微“术语前置过重”
 - [x] Method 仍偏“解释机制”，还没完全转成“服务 claim”
-- [ ] 根据method更新后文
+- [x] 根据method更新后文
 - [x] 行间公式冒号规范
 - [x] γ(∥c−pi∥)应该解释或给出具体公式，但不必像
 - [x] FMM
 - [x] 术语表/符号检查
-
-定性实验：图1初始化，目标是不可见human call，robot根据此时累计的target belief map选择viewpoint。同时对LOS SCG生成了代价场；图2随着target belief map更新，选择新viewpoint；图3拐角处human actor开始移动，robot经过topology-aware acoustic anticipation提前避开；图4最终到达目标位置。
-
+- [ ] 两张表合并
+- [ ] 精炼语言
 
 我的两大心病，实体名和机制名，我希望：
 对于环境中实体，1. GT层面有human actor H 【已修复】

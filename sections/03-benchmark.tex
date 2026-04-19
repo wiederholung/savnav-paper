@@ -52,12 +52,12 @@ For acoustic rendering, we compute the room impulse responses (RIRs) between the
 \subsubsection{Spatial and Dynamic Settings}
 For the crowded social scenario, humans are spawned within the main topological pathways to force spatial negotiation. For the hidden boundary scenario, we use raycast initialization from the agent's starting pose to ensure the humans are strictly outside the agent's LOS. Furthermore, for DPs, we generate navigation waypoints such that their trajectory explicitly intersects with the agent's shortest geodesic path to the target. To ensure timely spatial conflicts, these NLOS DPs only begin moving when the agent approaches within a $3.0\,\mathrm{m}$ radius. This forced-intersection design guarantees that the agent cannot succeed by simply ignoring the human; it must proactively yield or alter its path based on approaching footsteps.
 
-\begin{figure}[t]
-	\centering
-	\includegraphics[width=0.50\linewidth]{figures/sim.png}
-	\caption{\#TODO. Illustration of the simulation environment and episodes generated for the three SAVNav scenarios.}
-	\label{fig:benchmark_sim}
-\end{figure}
+% \begin{figure}[t]
+% 	\centering
+% 	\includegraphics[width=0.50\linewidth]{figures/sim.png}
+% 	\caption{\#TODO. Illustration of the simulation environment and episodes generated for the three SAVNav scenarios.}
+% 	\label{fig:benchmark_sim}
+% \end{figure}
 
 \subsection{Evaluation Metrics}
 \label{subsec:benchmark-metrics}

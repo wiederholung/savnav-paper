@@ -85,7 +85,7 @@ Version: 1.2.1
 
 - 向量、位置、方向使用粗体，如 `\mathbf{p}_{vis}`、`\mathbf{d}_{world}`。
 - 标量与参数使用普通数学斜体，如 `$z$`、`$k_d$`、`$\gamma_{mask}$`。
-- 环境、集合、映射空间使用 `\mathcal{}`，如 `\mathcal{E}`、`\mathcal{H}`。
+- 环境、集合、映射空间使用 `\mathcal{}`，如 `\mathcal{W}`、`\mathcal{H}`。
 - 下标保持数学写法，不混用 `\text{}`，如 `$C_{soc}$`、`\mathbf{p}_{robot}`。
 - 数值与单位之间使用 `\,`，单位使用 `\mathrm{}`，如 `2.55\,\mathrm{s}`、`20\,\mathrm{Hz}`、`1.0\,\mathrm{m}`。
 - 数学符号一旦在某节定义，应尽量在全文保持同一字母、下标和含义，不为局部措辞方便而改写符号系统。

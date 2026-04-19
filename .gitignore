@@ -33,5 +33,7 @@
 
 # Agent
 .claude/
+.gemini/
 
 references/
+2RA-L

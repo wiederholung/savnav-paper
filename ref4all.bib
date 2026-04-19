@@ -93,21 +93,20 @@
   keywords = {2-D forward looking sonar (FLS),acoustic camera,Acoustics,Cameras,Computational modeling,dataset,ground truthing,Imaging,Noise,ray tracing,Ray tracing,Reflection,Rendering (computer graphics),Robots,sim-to-real,simulator,Sonar,underwater sensing}
 }
 
-@misc{AdvancingAudiovisualNavigation2025,
-  title = {Advancing Audio-Visual Navigation through Multi-Agent Collaboration in {{3D}} Environments},
+@inproceedings{AdvancingAudiovisualNavigation2026,
+  title = {Advancing Audio-Visual Navigation through Multi-Agent Collaboration in~{{3D}} Environments},
+  booktitle = {Neural {{Information Processing}}},
   author = {Zhang, Hailong and Yu, Yinfeng and Wang, Liejun and Sun, Fuchun and Zheng, Wendong},
-  year = 2025,
-  number = {arXiv:2509.22698},
-  eprint = {2509.22698},
-  primaryclass = {cs},
-  publisher = {arXiv},
-  doi = {10.48550/ARXIV.2509.22698},
-  urldate = {2026-04-15},
+  editor = {Taniguchi, Tadahiro and Leung, Chi Sing Andrew and Kozuno, Tadashi and Yoshimoto, Junichiro and Mahmud, Mufti and Doborjeh, Maryam and Doya, Kenji},
+  year = 2026,
+  pages = {502--516},
+  publisher = {Springer Nature},
+  address = {Singapore},
+  doi = {10.1007/978-981-95-4097-6_34},
   abstract = {Intelligent agents often require collaborative strategies to achieve complex tasks beyond individual capabilities in real-world scenarios. While existing audio-visual navigation (AVN) research mainly focuses on single-agent systems, their limitations emerge in dynamic 3D environments where rapid multi-agent coordination is critical, especially for time-sensitive applications like emergency response. This paper introduces MASTAVN (Multi-Agent Scalable Transformer Audio-Visual Navigation), a scalable framework enabling two agents to collaboratively localize and navigate toward an audio target in shared 3D environments. By integrating cross-agent communication protocols and joint audio-visual fusion mechanisms, MASTAVN enhances spatial reasoning and temporal synchronization. Through rigorous evaluation in photorealistic 3D simulators (Replica and Matterport3D), MASTAVN achieves significant reductions in task completion time and notable improvements in navigation success rates compared to single-agent and non-collaborative baselines. This highlights the essential role of spatiotemporal coordination in multi-agent systems. Our findings validate MASTAVN's effectiveness in time-sensitive emergency scenarios and establish a paradigm for advancing scalable multi-agent embodied intelligence in complex 3D environments.},
-  archiveprefix = {arXiv},
-  copyright = {Creative Commons Attribution Non Commercial No Derivatives 4.0 International},
+  isbn = {9789819540976},
   langid = {english},
-  keywords = {Computer Science - Artificial Intelligence,Computer Science - Robotics}
+  keywords = {,Audio-Visual Navigation,Embodied Intelligence,Multi-Agent Collaboration}
 }
 
 @inproceedings{AlignedBetterListen2024,
@@ -674,10 +673,10 @@
   volume = {35},
   number = {5},
   pages = {958--976},
-  issn = {0899-7667},
+  issn = {0899-7667, 1530-888X},
   doi = {10.1162/neco_a_01579},
-  urldate = {2026-03-08},
-  abstract = {Visual navigation involves a movable robotic agent striving to reach a point goal (target location) using vision sensory input. While navigation with ideal visibility has seen plenty of success, it becomes challenging in suboptimal visual conditions like poor illumination, where traditional approaches suffer from severe performance degradation. We propose E3VN (echo-enhanced embodied visual navigation) to effectively perceive the surroundings even under poor visibility to mitigate this problem. This is made possible by adopting an echoer that actively perceives the environment via auditory signals. E3VN models the robot agent as playing a cooperative Markov game with that echoer. The action policies of robot and echoer are jointly optimized to maximize the reward in a two-stream actor-critic architecture. During optimization, the reward is also adaptively decomposed into the robot and echoer parts. Our experiments and ablation studies show that E3VN is consistently effective and robust in point goal navigation tasks, especially under nonideal visibility.},
+  urldate = {2026-04-17},
+  abstract = {Abstract Visual navigation involves a movable robotic agent striving to reach a point goal (target location) using vision sensory input. While navigation with ideal visibility has seen plenty of success, it becomes challenging in suboptimal visual conditions like poor illumination, where traditional approaches suffer from severe performance degradation. We propose E3VN (echo-enhanced embodied visual navigation) to effectively perceive the surroundings even under poor visibility to mitigate this problem. This is made possible by adopting an echoer that actively perceives the environment via auditory signals. E3VN models the robot agent as playing a cooperative Markov game with that echoer. The action policies of robot and echoer are jointly optimized to maximize the reward in a two-stream actor-critic architecture. During optimization, the reward is also adaptively decomposed into the robot and echoer parts. Our experiments and ablation studies show that E3VN is consistently effective and robust in point goal navigation tasks, especially under nonideal visibility.},
   langid = {english}
 }
 
@@ -1187,6 +1186,7 @@
   volume = {37},
   pages = {33505--33537},
   publisher = {Curran Associates, Inc.},
+  abstract = {Humans can picture a sound scene given an imprecise natural language description. For example, it is easy to imagine an acoustic environment given a phrase like ``the lion roar came from right behind me!''. For a machine to have the same degree of comprehension, the machine must know what a lion is (semantic attribute), what the concept of ``behind'' is (spatial attribute) and how these pieces of linguistic information align with the semantic and spatial attributes of the sound (what a roar sounds like when its coming from behind). State-of-the-art audio foundation models, such as CLAP [7, 44], which learn to map between audio scenes and natural textual descriptions, are trained on non-spatial audio and text pairs, and hence lack spatial awareness. In contrast, sound event localization and detection models are limited to recognizing sounds from a fixed number of classes, and they localize the source to absolute position (e.g., 0.2m) rather than a position described using natural language (e.g., ``next to me''). To address these gaps, we present ELSA (Embeddings for Language and Spatial Audio), a spatially awareaudio and text embedding model trained using multimodal contrastive learning. ELSA supports non-spatial audio, spatial audio, and open vocabulary text captions describing both the spatial and semantic components of sound. To train ELSA: (a) we spatially augment the audio and captions of three open-source audio datasets totaling 4,738 hours and 890,038 samples of audio comprised from 8,972 simulated spatial configurations, and (b) we design an encoder to capture the semantics of non-spatial audio, and the semantics and spatial attributes of spatial audio using contrastive learning. ELSA is a single model that is competitive with state-of-theart for both semantic retrieval and 3D source localization. In particular, ELSA achieves +2.8\% mean audio-to-text and text-to-audio R@1 above the LAIONCLAP [44] baseline, and outperforms by -11.6\textopenbullet{} mean-absolute-error in 3D source localization over the SeldNET [40] baseline on the TUT Sound Events 2018 benchmark [1]. Moreover, we show that the representation-space of ELSA is structured, enabling swapping of direction of audio via vector arithmetic of two directional text embeddings.},
   langid = {english},
   keywords = {No DOI found}
 }
@@ -2065,7 +2065,7 @@
   primaryclass = {cs},
   publisher = {arXiv},
   doi = {10.48550/ARXIV.2509.24966},
-  urldate = {2026-04-15},
+  urldate = {2026-04-17},
   abstract = {Understanding how people interact with their surroundings and each other is essential for enabling robots to act in socially compliant and context-aware ways. While 3D Scene Graphs have emerged as a powerful semantic representation for scene understanding, existing approaches largely ignore humans in the scene, also due to the lack of annotated human-environment relationships. Moreover, existing methods typically capture only open-vocabulary relations from single image frames, which limits their ability to model long-range interactions beyond the observed content. We introduce Social 3D Scene Graphs, an augmented 3D Scene Graph representation that captures humans, their attributes, activities and relationships in the environment, both local and remote, using an open-vocabulary framework. Furthermore, we introduce a new benchmark consisting of synthetic environments with comprehensive human-scene relationship annotations and diverse types of queries for evaluating social scene understanding in 3D. The experiments demonstrate that our representation improves human activity prediction and reasoning about human-environment relations, paving the way toward socially intelligent robots.},
   archiveprefix = {arXiv},
   copyright = {Creative Commons Attribution Non Commercial No Derivatives 4.0 International},
@@ -2073,7 +2073,7 @@
   keywords = {Computer Science - Computer Vision and Pattern Recognition}
 }
 
-@misc{SocialNavTrainingHumanInspired2026,
+@misc{SocialNavTrainingHumaninspired2026,
   title = {{{SocialNav}}: Training Human-Inspired Foundation Model for Socially-Aware Embodied Navigation},
   shorttitle = {{{SocialNav}}},
   author = {Chen, Ziyi and Guo, Yingnan and Chu, Zedong and Luo, Minghua and Shen, Yanfen and Sun, Mingchao and Hu, Junjun and Xie, Shichao and Yang, Kuan and Shi, Pei and Gu, Zhining and Liu, Lu and Han, Honglin and Wu, Xiaolong and Xu, Mu and Zhang, Yu and Guo, Ning},
@@ -2157,15 +2157,15 @@
 @inproceedings{SoundSimulationLearning2025,
   title = {The Sound of Simulation: Learning Multimodal Sim-to-Real Robot Policies with Generative Audio},
   shorttitle = {The Sound of Simulation},
-  booktitle = {Proceedings of the 9th {{Conference}} on {{Robot Learning}}},
-  author = {Wang, Renhao and Geng, Haoran and Li, Tingle and Wu, Philipp and Wang, Feishi and Anumanchipalli, Gopala and Darrell, Trevor and Li, Boyi and Abbeel, Pieter and Malik, Jitendra and Efros, Alexei A.},
+  booktitle = {Proceedings of the 9th Conference on Robot Learning},
+  author = {Wang, Renhao and Geng, Haoran and Li, Tingle and Wu, Philipp and Wang, Feishi and Anumanchipalli, Gopala and Darrell, Trevor and Li, Boyi and Abbeel, Pieter and Malik, Jitendra and Efros, Alexei A},
+  editor = {Lim, Joseph and Song, Shuran and Park, Hae-Won},
   year = 2025,
-  month = oct,
+  month = sep,
+  series = {Proceedings of Machine Learning Research},
+  volume = {305},
   pages = {420--436},
   publisher = {PMLR},
-  issn = {2640-3498},
-  doi = {10.1007/978-981-95-4097-6_34},
-  urldate = {2025-10-29},
   abstract = {Robots must integrate multiple sensory modalities to act effectively in the real world. Yet, learning such multimodal policies at scale remains challenging. Simulation offers a viable solution, but while vision has benefited from high-fidelity simulators, other modalities (e.g. sound) can be notoriously difficult to simulate. As a result, sim-to-real transfer has succeeded primarily in vision-based tasks, with multimodal transfer still largely unrealized. In this work, we tackle these challenges by introducing MultiGen, a framework that integrates large-scale generative models into traditional physics simulators, enabling multisensory simulation. We showcase our framework on the dynamic task of robot pouring, which inherently relies on multimodal feedback. By synthesizing realistic audio conditioned on simulation video, our method enables training on rich audiovisual trajectories---without any real robot data. We demonstrate effective zero-shot transfer to real-world pouring with novel containers and liquids, highlighting the potential of generative modeling to both simulate hard-to-model modalities and close the multimodal sim-to-real gap.},
   langid = {english}
 }
