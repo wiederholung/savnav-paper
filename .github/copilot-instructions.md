@@ -68,7 +68,7 @@ Version: 1.1.0
 - 评估一段：同时看逻辑位置、信息密度与潜在审稿疑问，不只看语法。
 - 补实验、贡献或动机：联动检查 Introduction、Method、Experiments、Conclusion。
 - 统一术语、缩写或命名：以 `drafts/glossary.md` 为准，并回查正文冲突。
-- 涉及引用：只从 `references.bib` 取 citekey。
+- 涉及引用：只从 `*.bib` 取 citekey。
 
 ## 输出风格
 
@@ -80,6 +80,6 @@ Version: 1.1.0
 ## 强制约束
 
 - 禁止参考 `drafts/outdated/` 下的任何内容。
-- 禁止修改 `references.bib`。
+- 禁止修改 `*.bib` 文件。
 - 禁止编造引用、实验设定、结果数值或未在全文定义的新术语。
 - 未核对相关章节前，不做可能破坏全文一致性的局部重写。

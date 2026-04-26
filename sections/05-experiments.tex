@@ -1,12 +1,12 @@
 \section{Experiments}
 \label{sec:experiments}
 
-We evaluate SAVNav on the benchmark introduced in Section~\ref{sec:benchmark}. Our experiments are designed to validate three core claims: 1) safe navigation in the SAVNav task requires joint reasoning over visual and acoustic modalities, rather than relying on single-modality or socially-unaware tracking; 2) persistent spatial memory is necessary to handle occlusions and ambiguity, exposing the limits of instantaneous reactive methods; and 3) resolving NLOS risks and acoustic ambiguity specifically requires layout-guided anticipation and active information-seeking.
+We evaluate SAVNav on the dataset introduced in Section~\ref{sec:dataset}. Our experiments are designed to validate three core claims: 1) safe navigation in the SAVNav task requires joint reasoning over visual and acoustic modalities, rather than relying on single-modality or socially-unaware tracking; 2) persistent spatial memory is necessary to handle occlusions and ambiguity, exposing the limits of instantaneous reactive methods; and 3) resolving NLOS risks and acoustic ambiguity specifically requires layout-guided anticipation and active information-seeking.
 
 \subsection{Experimental Setup}
 \label{subsec:exp-setup}
 
-We evaluate all methods on the SAVNav benchmark dataset defined in Section~\ref{sec:benchmark}, spanning the crowded social, hidden boundary, and mixed home activity scenarios. The navigating agent is instantiated as a Stretch 3 robot\footnote{\url{https://hello-robot.com/stretch-3-product}}, providing a forward-facing RGB-D camera and a 4-channel Ambisonic microphone array. Visual observations ($I^{(t)}, D^{(t)}$) are acquired at $20\,\mathrm{Hz}$, while acoustic waveforms ($A^{(t)}$) are captured over a $2.55\,\mathrm{s}$ sliding window. The robot's kinematic limits are bounded by $F_{\max}=0.5\,\mathrm{m/s}$ and $F_{\min}=0.05\,\mathrm{m/s}$, with nominal exploration speed $v_{\mathrm{avg}}=0.25\,\mathrm{m/s}$. We configure conservative anticipatory velocity hypotheses corresponding to typical human motion ($v_{\mathrm{walk}}=1.0\,\mathrm{m/s}$). All methods operate under identical episode constraints ($T=500$, $d_{\mathrm{success}}=1.0\,\mathrm{m}$) and are assessed via the benchmark metrics.
+We evaluate all methods on the SAVNav dataset defined in Section~\ref{sec:dataset}, spanning the crowded social, hidden boundary, and mixed home activity scenarios. The navigating agent is instantiated as a Stretch 3 robot\footnote{\url{https://hello-robot.com/stretch-3-product}}, providing a forward-facing RGB-D camera and a 4-channel Ambisonic microphone array. Visual observations ($I^{(t)}, D^{(t)}$) are acquired at $20\,\mathrm{Hz}$, while acoustic waveforms ($A^{(t)}$) are captured over a $2.55\,\mathrm{s}$ sliding window. The robot's kinematic limits are bounded by $F_{\max}=0.5\,\mathrm{m/s}$ and $F_{\min}=0.05\,\mathrm{m/s}$, with nominal exploration speed $v_{\mathrm{avg}}=0.25\,\mathrm{m/s}$. We configure conservative anticipatory velocity hypotheses corresponding to typical human motion ($v_{\mathrm{walk}}=1.0\,\mathrm{m/s}$). All methods operate under identical episode constraints ($T=500$, $d_{\mathrm{success}}=1.0\,\mathrm{m}$) and are assessed via the dataset metrics.
 % Due to space constraints, we omit the exhaustive list of empirical tuning constants (e.g., hysteresis thresholds, cost field variances, and decay rates). A complete specification of these hyperparameters is provided in our open-source repository at [ANONYMOUS_REPO_LINK].
 
 We compare SAVNav against three baselines, each adapted to expose a specific capability gap:
@@ -24,7 +24,7 @@ Table~\ref{tab:main_results} reports the quantitative performance of SAVNav and 
 
 \begin{table*}[t]
 	\centering
-	\caption{Quantitative evaluation on the SAVNav benchmark. ENMuS\textsuperscript{3} is evaluated only on the subset of episodes with compatible BeDAViN target categories. The non-line-of-sight (NLOS) collision rate (NCR) is omitted (`--`) for the crowded social scenario, as it contains no NLOS risks by definition.}
+	\caption{Quantitative evaluation on the SAVNav dataset. ENMuS\textsuperscript{3} is evaluated only on the subset of episodes with compatible BeDAViN target categories. The non-line-of-sight (NLOS) collision rate (NCR) is omitted (`--`) for the crowded social scenario, as it contains no NLOS risks by definition.}
 	\label{tab:main_results}
 	\resizebox{\linewidth}{!}{
 		\begin{tabular}{l | ccccc | ccccc | ccccc}
