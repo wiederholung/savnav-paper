@@ -32,7 +32,8 @@
 *.sublime-workspace
 
 # Agent
-.claude/
+# .claude/
+.claude.bak/
 .gemini/
 
 references/
