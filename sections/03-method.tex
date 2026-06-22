@@ -43,7 +43,7 @@ Each episode specifies a query $q \in \mathcal{L}_{\mathrm{target}}$ identifying
 \subsection{Multi-Modal Perception}
 \label{subsec:perception}
 
-The perception layer extracts spatial and semantic attributes from raw sensory streams and transforms them into object-centric representations.
+As depicted in the left panel of Fig.~\ref{fig:system_arch}, the perception layer extracts spatial and semantic attributes from raw sensory streams and transforms them into object-centric representations.
 
 \subsubsection{Visual Perception}
 The visual module processes egocentric RGB-D observations using YOLO26~\cite{YOLO26KeyArchitectural2026} for real-time human detection and segmentation. For each detected human mask, we extract its 3D position $\mathbf{p}_{\mathrm{hum}} \in \mathbb{R}^3$ via depth projection and assign a spatial uncertainty $\sigma_{\mathrm{hum}}$ that scales quadratically with distance. We crop the masked region and encode it with ImageBind~\cite{ImageBindOneEmbedding2023} to obtain a cross-modal embedding $\mathbf{e}_{\mathrm{hum}}$. To maintain temporal consistency, these frame-level detections are continuously tracked, with each managed as a persistent human entity $E_{\mathrm{hum}} = (\mathbf{p}_{\mathrm{hum}}, \sigma_{\mathrm{hum}}, \mathbf{e}_{\mathrm{hum}})$. For static objects $\mathcal{O}$, their spatial attributes and embeddings $\mathbf{e}_{\mathrm{obj}}$ are simply retrieved from the static semantic map.
@@ -54,7 +54,7 @@ The acoustic module processes continuous FOA audio streams using a sliding-windo
 \subsection{Acoustic-to-Spatial Social Mapping (SAVMap)}
 \label{subsec:savmap}
 
-Traditional social navigation relies on instantaneous LOS detections. SAVMap maintains three coupled states: anchoring confidence for audio-visual association, NLOS risk belief over topological nodes, and the social cost field used by the SAVNav policy.
+Vision-based social navigation relies on instantaneous LOS detections. SAVMap maintains three coupled states: anchoring confidence for audio-visual association, NLOS risk belief over topological nodes, and the resultant social cost field used by the SAVNav policy.
 
 \subsubsection{Audio-Visual Anchoring}
 The association between a persistent sound event $E_{\mathrm{aud}}$ and a visual entity $E_{\mathrm{vis}}$ (either a tracked LOS human entity $E_{\mathrm{hum}}$ or a static object $o$, depending on $c_{\mathrm{aud}}$) is governed by a first-order Markov smoothing update. The anchoring confidence evaluates semantic cross-modal similarity $s$ heavily while discounting angular spatial deviation:
@@ -106,7 +106,7 @@ For anchored entities, the LOS cost field $C_{\mathrm{los}}(\mathbf{x})$ evaluat
 The SAVNav policy translates SAVMap into safe, target-driven motion. It operates on two map-level representations: the target spatial belief map for acoustic target search and the social cost field for social compliance.
 
 \subsubsection{Active Sensory Exploration}
-If the acoustic target is detected but remains unanchored due to occlusion or reverberation, the robot enters active sensory exploration. We maintain a target spatial belief map $B^{(t)}(\mathbf{x})$ over the navigable space, which functions as an evidence grid storing log-odds probabilities of the target's presence. Following standard Bayesian mapping semantics, $B^{(t)}$ receives positive log-odds updates in the angular region aligned with the acoustic DOA $\mathbf{d}_{\mathrm{aud}}^{(t)}$ bounded by $\sigma_{\mathrm{aud}}$, and receives negative log-odds decay in any free space cleared by the robot's visual frustum.
+As outlined by the decision logic in Fig.~\ref{fig:system_arch} (top right), if the acoustic target is detected but remains unanchored due to occlusion or reverberation, the robot enters active sensory exploration. We maintain a target spatial belief map $B^{(t)}(\mathbf{x})$ over the navigable space, which functions as an evidence grid storing log-odds probabilities of the target's presence. Following standard Bayesian mapping semantics, $B^{(t)}$ receives positive log-odds updates in the angular region aligned with the acoustic DOA $\mathbf{d}_{\mathrm{aud}}^{(t)}$ bounded by $\sigma_{\mathrm{aud}}$, and receives negative log-odds decay in any free space cleared by the robot's visual frustum.
 
 To resolve target ambiguity, the robot samples candidate viewpoints $\mathcal{P} = \{\mathbf{p}_1, \dots, \mathbf{p}_N\}$ near topological nodes. The optimal viewpoint $\mathbf{p}^*$ is selected by maximizing the following utility:
 \begin{equation}
@@ -116,7 +116,7 @@ To resolve target ambiguity, the robot samples candidate viewpoints $\mathcal{P}
 where $\mathcal{S}(\mathbf{p}_i)$ defines the set of unoccluded discrete spatial grid cells visible from viewpoint $\mathbf{p}_i$, and $P_{\mathrm{target}}(\mathbf{c}) \in [0,1]$ is the target probability mapped from the log-odds grid $B^{(t)}$. $L(\cdot)$ is the geodesic path length from current position $\mathbf{p}_{\mathrm{robot}}^{(t)}$, $v_{\mathrm{avg}}$ is the nominal exploration speed, and $\beta$ balances information gain against travel time.
 
 \subsubsection{Socially-Compliant Navigation}
-Once the acoustic target is anchored or a viewpoint $\mathbf{p}^*$ is selected, the system computes global trajectories using the Fast Marching Method (FMM)~\cite{FastMarchingMethods1999} to solve the Eikonal equation. The scalar speed field driving the wave propagation is scaled inversely with the social cost:
+As depicted in the bottom right panel of Fig.~\ref{fig:system_arch}, once the acoustic target is anchored or a viewpoint $\mathbf{p}^*$ is selected, the system projects the social cost field onto the 2D navigation grid $\mathcal{M}_{\mathrm{nav}}$ and computes global trajectories using the Fast Marching Method (FMM)~\cite{FastMarchingMethods1999} to solve the Eikonal equation. The scalar speed field driving the wave propagation is scaled inversely with the social cost:
 \begin{equation}
     F(\mathbf{x}) = (F_{\max} - F_{\min}) \cdot \left(1 - C_{\mathrm{social}}(\mathbf{x})\right) + F_{\min},
     \label{eq:speed}

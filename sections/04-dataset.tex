@@ -10,7 +10,7 @@ The SAVNav task is situated in continuous indoor environments populated by stati
 
 The objective of the embodied agent is to navigate to the designated acoustic target using egocentric visual and auditory sensors, alongside real-time pose estimation and a pre-computed map of the static environment. Crucially, the agent must treat the social sound events as boundaries. The agent does not have access to the ground-truth locations or trajectories of the human actors and must infer their presence—even when fully occluded by walls or corners—proactively yielding to avoid collisions and personal space violations.
 
-To evaluate the agent across different physical and social contexts, we structure the dataset into three scenarios. The human counts specified below denote solely the distractor entities acting as social boundaries. When the acoustic target itself is a human, one additional stationary human actor is spawned to emit the target sound. This taxonomy separates LOS social routing from NLOS acoustic anticipation while still covering mixed domestic settings:
+To evaluate the agent across different physical and social contexts, we structure the dataset into three scenarios, summarized in Table~\ref{tab:dataset_tiers} and with representative examples illustrated in Fig.~\ref{fig:dataset_sim}. The human counts specified below denote solely the distractor entities acting as social boundaries. When the acoustic target itself is a human, one additional stationary human actor is spawned to emit the target sound. This taxonomy separates LOS social routing from NLOS acoustic anticipation while still covering mixed domestic settings:
 
 \begin{enumerate}
 	\item \textit{Crowded Social:} A high-density, fully LOS environment containing 3--5 distractor humans. It comprises 1--2 stationary conversational groups (SCGs, defined as two humans standing $1.0\,\mathrm{m}$ apart facing each other) alongside 1--2 dynamic pedestrians (DPs). The primary requirement is to navigate through socially dense spaces without interrupting ongoing conversations or violating personal space.
@@ -35,6 +35,14 @@ To evaluate the agent across different physical and social contexts, we structur
 	}
 \end{table}
 
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=\linewidth]{figures/scene.pdf}
+	\caption{Representative episodes from the three scenarios in the SAVNav dataset. Each panel displays the third-person 3D views (top) and the corresponding top-down map (bottom) illustrating the ground-truth shortest path to the target (green line). The environments feature varying combinations of line-of-sight (LOS) and non-line-of-sight (NLOS) distractor humans, categorized as either stationary conversational groups (SCGs) or dynamic pedestrians (DPs).}
+	\label{fig:dataset_sim}
+\end{figure*}
+
+
 \subsection{Simulation and Episode Generation}
 \label{subsec:dataset-sim}
 
@@ -52,12 +60,12 @@ For acoustic rendering, we compute the room impulse responses (RIRs) between the
 \subsubsection{Spatial and Dynamic Settings}
 For the crowded social scenario, humans are spawned within the main topological pathways to force spatial negotiation. For the hidden boundary scenario, we use raycast initialization from the agent's starting pose to ensure the humans are strictly outside the agent's LOS. Furthermore, for DPs, we generate navigation waypoints such that their trajectory explicitly intersects with the agent's shortest geodesic path to the target. To ensure timely spatial conflicts, these NLOS DPs only begin moving when the agent approaches within a $3.0\,\mathrm{m}$ radius. This forced-intersection design guarantees that the agent cannot succeed by simply ignoring the human; it must proactively yield or alter its path based on approaching footsteps.
 
-% \begin{figure}[t]
+% \begin{figure*}[t]
 % 	\centering
-% 	\includegraphics[width=0.50\linewidth]{figures/sim.png}
-% 	\caption{\#TODO. Illustration of the simulation environment and episodes generated for the three SAVNav scenarios.}
+% 	\includegraphics[width=\linewidth]{figures/scene.pdf}
+% 	\caption{Representative episodes from the three scenarios in the SAVNav dataset. Each panel displays the third-person 3D views (top) and the corresponding top-down map (bottom) illustrating the ground-truth shortest path to the target (green line). The environments feature varying combinations of line-of-sight (LOS) and non-line-of-sight (NLOS) distractor humans, categorized as either stationary conversational groups (SCGs) or dynamic pedestrians (DPs).}
 % 	\label{fig:dataset_sim}
-% \end{figure}
+% \end{figure*}
 
 \subsection{Evaluation Metrics}
 \label{subsec:dataset-metrics}
