@@ -1,7 +1,7 @@
 \section{Experiments}
 \label{sec:experiments}
 
-We evaluate SAVNav on the dataset introduced in Section~\ref{sec:dataset}. Our experiments are designed to validate three core claims: 1) safe navigation in the SAVNav task requires joint reasoning over visual and acoustic modalities, rather than relying on single-modality or socially-unaware tracking; 2) persistent spatial memory is necessary to handle occlusions and ambiguity, exposing the limits of instantaneous reactive methods; and 3) resolving NLOS risks and acoustic ambiguity specifically requires layout-guided anticipation and active information-seeking.
+We evaluate SAVNav on the dataset introduced in Section~\ref{sec:dataset}. Our experiments are designed to validate three core claims: 1) safe navigation requires joint audio-visual perception; relying on vision alone leads to blind-spot collisions, while socially-unaware audio trackers violate spatial norms; 2) maintaining persistent spatial states (i.e., accumulating target and risk beliefs over time) is essential to stabilize yielding and handle occlusions, exposing the limits of instantaneous reactive methods; and 3) resolving severe occlusions and acoustic ambiguity specifically requires proactive reasoning, via layout-guided anticipation and active information-seeking.
 
 \subsection{Experimental Setup}
 \label{subsec:exp-setup}
@@ -24,7 +24,7 @@ Table~\ref{tab:main_results} reports the quantitative performance of SAVNav and 
 
 \begin{table*}[t]
 	\centering
-	\caption{Quantitative evaluation on the SAVNav dataset. ENMuS\textsuperscript{3} is evaluated only on the subset of episodes with compatible BeDAViN target categories. The non-line-of-sight (NLOS) collision rate (NCR) is omitted (`--`) for the crowded social scenario, as it contains no NLOS risks by definition.}
+	\caption{Quantitative evaluation and ablation study on the SAVNav dataset. ENMuS\textsuperscript{3} is evaluated only on the subset of episodes with compatible BeDAViN target categories. The non-line-of-sight (NLOS) collision rate (NCR) is omitted (--) for the crowded social scenario, as it contains no NLOS risks by definition. We evaluate ablation variants only in their informative scenarios (omitted as --).}
 	\label{tab:main_results}
 	\resizebox{\linewidth}{!}{
 		\begin{tabular}{l | ccccc | ccccc | ccccc}
@@ -34,6 +34,8 @@ Table~\ref{tab:main_results} reports the quantitative performance of SAVNav and 
 			                         & SR $\uparrow$                       & SPL $\uparrow$                       & HCR $\downarrow$                        & NCR $\downarrow$ & PSC $\uparrow$
 			                         & SR $\uparrow$                       & SPL $\uparrow$                       & HCR $\downarrow$                        & NCR $\downarrow$ & PSC $\uparrow$
 			                         & SR $\uparrow$                       & SPL $\uparrow$                       & HCR $\downarrow$                        & NCR $\downarrow$ & PSC $\uparrow$ \\
+			\midrule
+			\multicolumn{16}{c}{\textit{Baselines \& Ours}} \\
 			\midrule
 			Falcon+Goal Oracle       & \textbf{55.12}                      & \textbf{50.38}                       & 35.67                                   & --               & 87.24
 			                         & 36.25                               & 32.17                                & 56.48                                   & 48.73            & 82.35
@@ -48,12 +50,21 @@ Table~\ref{tab:main_results} reports the quantitative performance of SAVNav and 
 			SAVNav (Ours)            & 54.28                               & 43.15                                & \textbf{13.52}                          & --               & \textbf{90.17}
 			                         & \textbf{51.47}                      & \textbf{41.23}                       & \textbf{17.85}                          & \textbf{11.36}   & \textbf{88.74}
 			                         & \textbf{49.52}                      & \textbf{39.47}                       & \textbf{15.63}                          & \textbf{9.84}    & \textbf{88.36} \\
+			\midrule
+			\multicolumn{16}{c}{\textit{Ablation Variants}} \\
+			\midrule
+			w/o Topology-Aware Anticipation & --                                  & --                                   & --                                      & --               & --
+			                         & 41.35                               & 33.18                                & 31.24                                   & 25.63            & 82.47
+			                         & 39.83                               & 31.25                                & 27.46                                   & 19.83            & 82.15          \\
+			w/o Active Sensory Exploration  & --                                  & --                                   & --                                      & --               & --
+			                         & 39.62                               & 29.74                                & 19.83                                   & 13.28            & 87.56
+			                         & 37.14                               & 27.58                                & 17.42                                   & 11.63            & 87.42          \\
 			\bottomrule
 		\end{tabular}
 	}
 \end{table*}
 
-Compared with Falcon+Goal Oracle, SAVNav highlights the vulnerability of LOS-only navigation in the face of hidden risks. In hidden boundary, Falcon completely fails to anticipate humans behind walls, resulting in a severe NCR of 48.73\% and a high overall HCR of 56.48\%. SAVNav utilizes $\mathcal{N}_{\mathrm{topo}}$ to infer the most probable emergence node $n^*$ and its risk score $B_{\mathrm{nlos}}^{(t)}(n^*)$ in~\eqref{eq:nlos_score} to safely yield, reducing NCR to 11.36\% and HCR to 17.85\%, while simultaneously increasing SR. This demonstrates that pure visual forecasting cannot safely manage blind-corner encounters without audio-derived NLOS structure.
+Compared with Falcon+Goal Oracle, SAVNav highlights the vulnerability of LOS-only navigation in the face of hidden risks. In hidden boundary, Falcon completely fails to anticipate humans behind walls, resulting in a severe NCR of 48.73\% and a high overall HCR of 56.48\%. SAVNav utilizes $\mathcal{N}_{\mathrm{topo}}$ to infer the most probable emergence node $n^*$ and its risk score $B_{\mathrm{nlos}}^{(t)}(n^*)$ in~\eqref{eq:nlos_score} to safely yield, reducing NCR to 11.36\% and HCR to 17.85\%, while simultaneously increasing SR. This demonstrates that pure visual forecasting cannot safely manage blind-corner encounters without audio-derived NLOS structure. In the crowded social scenario, although Falcon+Goal Oracle achieves higher SR and SPL, this is an expected artifact of its access to ground-truth target coordinates, which eliminates the need for active exploration.
 
 Compared with ENMuS\textsuperscript{3}, SAVNav exposes the danger of socially-unaware AVNav. While ENMuS\textsuperscript{3} relies on acoustic tracking to find the target, it ignores the social boundaries formed by conversational groups and footsteps. This leads to profound failures in social compliance, with PSC dropping to 66.38\% in crowded social and 64.53\% in mixed home activity. By explicitly constructing the context-aware fields $C_{\mathrm{nlos}}(\mathbf{x})$ in~\eqref{eq:scg_cost} and~\eqref{eq:dp_cost}, and aggregating them in~\eqref{eq:final_cost} before updating $F(\mathbf{x})$ in~\eqref{eq:speed}, SAVNav maintains high social compliance (PSC near 90\%) across all settings, proving that treating sound merely as a goal rather than a social boundary causes severe intrusions.
 
@@ -62,31 +73,8 @@ Compared with Reactive SAVNav, we validate the necessity of persistent map-level
 \subsection{Ablation Study}
 \label{subsec:exp-ablation}
 
-To isolate the contribution of each capability, we evaluate three ablated variants of SAVNav, shown in Table~\ref{tab:ablation_results}. Each variant removes one planner-relevant capability while keeping the rest of the system as fixed as possible, so that the performance drop can be attributed to a missing function rather than to a wholesale redesign.
+To isolate the contribution of each capability, we evaluate two ablated variants of SAVNav, shown in Table~\ref{tab:main_results}. Each variant removes one planner-relevant capability while keeping the rest of the system as fixed as possible, so that the performance drop can be attributed to a missing function rather than to a wholesale redesign.
 
-\begin{table*}[t]
-	\centering
-	\caption{Ablation study of SAVNav components. We evaluate each variant only in its informative scenarios: topology-aware acoustic anticipation targets non-line-of-sight (NLOS) human risks, while active sensory exploration resolves acoustic target ambiguity. }
-	\label{tab:ablation_results}
-	\resizebox{\linewidth}{!}{
-		\begin{tabular}{l | ccccc | ccccc}
-			\toprule
-			\multirow{2}{*}{Variant}        & \multicolumn{5}{c|}{Hidden Boundary} & \multicolumn{5}{c}{Mixed Home Activity}                                                        \\
-			\cmidrule(lr){2-6} \cmidrule(lr){7-11}
-			                                & SR $\uparrow$                        & SPL $\uparrow$                          & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$
-			                                & SR $\uparrow$                        & SPL $\uparrow$                          & HCR $\downarrow$ & NCR $\downarrow$ & PSC $\uparrow$ \\
-			\midrule
-			w/o Topology-Aware Anticipation & 41.35                                & 33.18                                   & 31.24            & 25.63            & 82.47
-			                                & 39.83                                & 31.25                                   & 27.46            & 19.83            & 82.15          \\
-			w/o Active Sensory Exploration  & 39.62                                & 29.74                                   & 19.83            & 13.28            & 87.56
-			                                & 37.14                                & 27.58                                   & 17.42            & 11.63            & 87.42          \\
-			\midrule
-			Full SAVNav                     & \textbf{51.47}                       & \textbf{41.23}                          & \textbf{17.85}   & \textbf{11.36}   & \textbf{88.74}
-			                                & \textbf{49.52}                       & \textbf{39.47}                          & \textbf{15.63}   & \textbf{9.84}    & \textbf{88.36} \\
-			\bottomrule
-		\end{tabular}
-	}
-\end{table*}
 
 \subsubsection{w/o Topology-Aware Acoustic Anticipation}
 This variant ablates the spatial dimension by removing topology-guided probability diffusion. It does not utilize precomputed topological nodes $\mathcal{N}_{\mathrm{topo}}$ to extract the candidate set or evaluate $B_{\mathrm{nlos}}^{(t)}(n_j)$ in~\eqref{eq:nlos_score}. Instead, for an unanchored social sound event, it calculates the intersection of the DOA ray $\mathbf{d}_{\mathrm{aud}}^{(t)}$ with the nearest static obstacle and places a single localized isotropic cost there, without inferring DP velocity hypotheses $\mathbf{v}_{*}^{(t)}$ in~\eqref{eq:vel_hyp}.
