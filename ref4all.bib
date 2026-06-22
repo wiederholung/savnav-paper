@@ -1233,10 +1233,14 @@
   year = 2020,
   month = may,
   pages = {9701--9707},
+  publisher = {IEEE},
+  address = {Paris, France},
   issn = {2577-087X},
   doi = {10.1109/ICRA40945.2020.9197008},
-  urldate = {2025-10-27},
+  urldate = {2026-05-24},
   abstract = {A crucial ability of mobile intelligent agents is to integrate the evidence from multiple sensory inputs in an environment and to make a sequence of actions to reach their goals. In this paper, we attempt to approach the problem of Audio-Visual Embodied Navigation, the task of planning the shortest path from a random starting location in a scene to the sound source in an indoor environment, given only raw egocentric visual and audio sensory data. To accomplish this task, the agent is required to learn from various modalities, i.e., relating the audio signal to the visual environment. Here we describe an approach to audio-visual embodied navigation that takes advantage of both visual and audio pieces of evidence. Our solution is based on three key ideas: a visual perception mapper module that constructs its spatial memory of the environment, a sound perception module that infers the relative location of the sound source from the agent, and a dynamic path planner that plans a sequence of actions based on the audio-visual observations and the spatial memory of the environment to navigate toward the goal. Experimental results on a newly collected Visual-Audio-Room dataset using the simulated multi-modal environment demonstrate the effectiveness of our approach over several competitive baselines.},
+  copyright = {https://ieeexplore.ieee.org/Xplorehelp/downloads/license-information/IEEE.html},
+  isbn = {978-1-7281-7395-5},
   langid = {english},
   keywords = {Acoustics,Feature extraction,Navigation,Robot sensing systems,Task analysis,Visual perception,Visualization}
 }
@@ -1433,6 +1437,18 @@
   abstract = {This technical report details our submission system for Task 3 of the DCASE 2025 Challenge, which focuses on sound event localization and detection (SELD) in regular video content with stereo audio. In addition to estimating the direction of arrival (DOA) and distance of sound sources, the audio-visual SELD task requires predicting whether the sound source is on-screen. For the audio-only track, we used two-channel log-Mel spectrogram features from stereo audio as model inputs. We adapted the audio-visual pixel swapping (AVPS) technique from first-order Ambisonics (FOA) to stereo format through left-right channel swapping coupled with horizontal video pixel transposition, effectively doubling the training data. Our architecture implemented three specialized models for DOA, distance, and source coordinates estimation tasks, subsequently integrated through a joint prediction framework. The audio-visual track utilized a ResNet-50 model pre-trained on ImageNet for visual feature extraction, enhanced by a teacher-student learning paradigm for cross-modal knowledge distillation. To improve on-screen event detection, we developed a novel two-stage visual post-processing method. Our methods were evaluated using the development set of the DCASE 2025 Task 3.},
   langid = {english},
   keywords = {No DOI found}
+}
+
+@inproceedings{ObjectGoalNavigation2020,
+  title = {Object Goal Navigation Using Goal-Oriented Semantic Exploration},
+  booktitle = {Advances in Neural Information Processing Systems},
+  author = {Chaplot, Devendra Singh and Gandhi, Dhiraj Prakashchand and Gupta, Abhinav and Salakhutdinov, Russ R},
+  editor = {Larochelle, H. and Ranzato, M. and Hadsell, R. and Balcan, M.F. and Lin, H.},
+  year = 2020,
+  volume = {33},
+  pages = {4247--4258},
+  publisher = {Curran Associates, Inc.},
+  langid = {english}
 }
 
 @misc{ObjectNavRevisitedEvaluation2020,
@@ -1924,7 +1940,7 @@
   keywords = {Computer Science - Computer Vision and Pattern Recognition,Electrical Engineering and Systems Science - Audio and Speech Processing}
 }
 
-@inproceedings{SAVVYSpatialAwareness2025a,
+@inproceedings{SAVVYSpatialAwareness2025,
   title = {{{SAVVY}}: Spatial Awareness via Audio-Visual {{LLMs}} through Seeing and Hearing},
   shorttitle = {Savvy},
   booktitle = {The {{Thirty-ninth Annual Conference}} on {{Neural Information Processing Systems}}},
