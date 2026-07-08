@@ -1,6 +1,6 @@
 # SAVNav: Socially-Aware Audio Visual Navigation
 
-Version: 1.1.0
+Version: 1.1.1
 
 这是论文 LaTeX 仓库，计划投稿 IEEE Robotics and Automation Letters (RA-L)，结构如下：
 
@@ -55,8 +55,8 @@ Version: 1.1.0
 当修改核心设定、动机或术语（尤其是新增或重新定义）时，**必须**同步检查以下位置是否依然一致：
 
 - **01-introduction.tex**: 问题定义、动机（Motivation）与贡献（Contributions）。
-- **03-benchmark.tex**: 任务设定、实体定义与评价对象（Evaluation Objects）。
-- **04-method.tex**: 模块名、机制叙述、符号表与关键图注。
+- **03-method.tex**: 模块名、机制叙述、符号表与关键图注。
+- **04-dataset.tex**: 任务设定、实体定义与评价对象（Evaluation Objects）。
 - **05-experiments.tex**: 指标名、比较对象与消融设定。
 - **06-conclusions.tex**: 总结性回顾措辞。
 
