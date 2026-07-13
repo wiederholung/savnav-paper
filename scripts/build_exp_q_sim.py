@@ -22,14 +22,27 @@ stream compression only.  All geometry is in abstract "u" units, top-down
 image aspect ratios are never distorted (figure physical aspect == u-space aspect).
 """
 import os
+import re
+import argparse
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch
+from matplotlib.patches import FancyBboxPatch, Rectangle, Patch
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "figures", "qualitative_exp", "sim")
+
+# ---- optional features (both default ON) -----------------------------------
+_ap = argparse.ArgumentParser(description="Compose figures/exp-q-sim.pdf")
+_ap.add_argument("--no-step-labels", dest="step_labels", action="store_false",
+                 help="disable the per-keyframe step badge")
+_ap.add_argument("--no-outcome-frames", dest="outcome_frames", action="store_false",
+                 help="disable the coloured outcome border on terminal keyframes")
+_ap.set_defaults(step_labels=True, outcome_frames=True)
+ARGS, _ = _ap.parse_known_args()
+SHOW_STEP_LABELS = ARGS.step_labels
+SHOW_OUTCOME_FRAMES = ARGS.outcome_frames
 
 # ---- font: match the paper (Times) -----------------------------------------
 matplotlib.rcParams["font.family"] = "serif"
@@ -43,26 +56,57 @@ matplotlib.rcParams["pdf.fonttype"] = 42     # embed TrueType, text stays select
 PDF_DPI = 700
 
 # ---- source frames ----------------------------------------------------------
+# Terminal keyframes carry an outcome tag in the filename (__success / __collision
+# / __unreached); non-terminal frames do not.  This is the single source of truth
+# for the outcome border going forward.
 F = {
     "los_ours1":  "los-ep0-ours.mp4_000006.720.png",
-    "los_ours2":  "los-ep0-ours.mp4_000010.176.png",
-    "los_falcon": "los-ep0-falcon.mp4_000024.021.png",
-    "los_enmus":  "los-ep0-enmus.mp4_000024.021.png",
+    "los_ours2":  "los-ep0-ours.mp4_000010.176__success.png",
+    "los_falcon": "los-ep0-falcon.mp4_000024.021__unreached.png",
+    "los_enmus":  "los-ep0-enmus.mp4_000024.021__unreached.png",
     "nlos_ours1": "nlos-ep785-ours.mp4_000007.247.png",
     "nlos_ours2": "nlos-ep785-ours.mp4_000008.804.png",
-    "nlos_ours3": "nlos-ep785-ours.mp4_000014.357.png",
+    "nlos_ours3": "nlos-ep785-ours.mp4_000014.357__success.png",
     "nlos_falcon1": "nlos-ep785-falocn.mp4_000021.218.png",
-    "nlos_falcon2": "nlos-ep785-falocn.mp4_000022.005.png",
-    "nlos_enmus": "nlos-ep1-enmus.mp4_000009.045.png",
+    "nlos_falcon2": "nlos-ep785-falocn.mp4_000022.005__collision.png",
+    "nlos_enmus": "nlos-ep1-enmus.mp4_000009.045__collision.png",
     "mix_ours1":  "mixed-ep3-ours.mp4_000004.865.png",
     "mix_ours2":  "mixed-ep3-ours.mp4_000008.687.png",
-    "mix_ours3":  "mixed-ep3-ours.mp4_000012.673.png",
-    "mix_nosearch": "mixed-ep3-ours_no_search.mp4_000019.058.png",
-    "mix_noaudio":  "mixed-ep3-ours_no_audio_cost.mp4_20260714_004116.962.png",
+    "mix_ours3":  "mixed-ep3-ours.mp4_000012.673__success.png",
+    "mix_nosearch": "mixed-ep3-ours_no_search.mp4_000019.058__unreached.png",
+    "mix_noaudio":  "mixed-ep3-ours_no_audio_cost.mp4_20260714_004116.962__collision.png",
 }
 IMG = {k: Image.open(os.path.join(SRC, v)) for k, v in F.items()}
 def ar(k):  # aspect ratio w/h
     return IMG[k].size[0] / IMG[k].size[1]
+
+# ---- step number per keyframe ----------------------------------------------
+# The sim logical frame rate (1/update_dt) is ~20.83 Hz (drafts/savnav_impl.md),
+# so a frame's step is derivable from the "<t>" in "*.mp4_<t>.png" as round(t*FPS).
+# The sim's effective fps jitters by a frame or two, so we pin the EXACT step read
+# from each frame's baked "Step" overlay; filename derivation is the fallback for
+# any new/un-pinned frame (and the only option for frames lacking a video timestamp).
+FPS_SIM = 20.83
+STEP_EXACT = {
+    "los_ours1": 141, "los_ours2": 213, "los_falcon": 498, "los_enmus": 498,
+    "nlos_ours1": 152, "nlos_ours2": 185, "nlos_ours3": 299,
+    "nlos_falcon1": 443, "nlos_falcon2": 456, "nlos_enmus": 186,
+    "mix_ours1": 103, "mix_ours2": 182, "mix_ours3": 265,
+    "mix_nosearch": 398, "mix_noaudio": 182,
+}
+def step_for(k):
+    if k in STEP_EXACT:
+        return STEP_EXACT[k]
+    m = re.search(r"\.mp4_(\d+\.\d+)(?:__|\.png)", F[k])
+    return round(float(m.group(1)) * FPS_SIM) if m else None
+
+# ---- outcome per keyframe (parsed from the filename tag) --------------------
+OUTCOME_C = {"success": "#1a9850", "collision": "#d62728", "unreached": "#f0a020"}
+OUTCOME_LABEL = {"success": "Success", "collision": "Collision",
+                 "unreached": "Not reached"}
+def outcome_for(k):
+    m = re.search(r"__(success|collision|unreached)\.png$", F[k])
+    return m.group(1) if m else None
 
 # ---- palette ----------------------------------------------------------------
 OURS_C  = "#0b6b3a"   # green  -> our method
@@ -76,7 +120,7 @@ ACC = {"los": "#2f6db5", "nlos": "#c0392b", "mixed": "#6d4c9f"}
 H_TALL     = 1000.0    # height of a tall (portrait) panel
 SEQ_GAP    = 96.0      # gap between consecutive frames (hosts the sequence arrow)
 GAP_REGION = 150.0     # gap between LOS and NLOS
-GAP_V      = 168.0     # gap between top block and Mixed block
+GAP_V      = 172.0     # gap between top block and Mixed block (holds outcome legend)
 TITLE_H    = 86.0      # band reserved above a region for its title
 METHOD_H   = 58.0      # band reserved above a sub-row for method labels
 ROW_GAP    = 34.0      # min gap between the tall sub-row and the wide sub-row
@@ -154,8 +198,8 @@ def build_mixed_region(rx, ry, total_w, groups):
     for gi, (keys, label, color, fs) in enumerate(groups):
         cw = col_w[keys[0]]
         gw = group_w[gi]
-        add_text(label, x + gw / 2, y_tall - METHOD_H * 0.52,
-                 fs=fs, color=color, weight="bold")
+        add_text(label, x + gw / 2, y_tall - 16,
+                 fs=fs, color=color, weight="bold", va="bottom")
         for j, k in enumerate(keys):
             add_img(k, x, y_tall, cw, H_TALL)
             if j > 0:                               # sequence arrow (Ours x3)
@@ -234,8 +278,25 @@ for key, x, ytop, w, h in panels:
     ax.imshow(IMG[key], interpolation="none")
     ax.set_xticks([]); ax.set_yticks([])
     ax.set_zorder(5)
+    # outcome border: coloured + thick on terminal frames, subtle grey otherwise
+    oc = outcome_for(key)
+    if SHOW_OUTCOME_FRAMES and oc:
+        ecol, elw = OUTCOME_C[oc], 3.6
+    else:
+        ecol, elw = "#c3c7cc", 0.7
     for s in ax.spines.values():
-        s.set_visible(True); s.set_edgecolor("#c3c7cc"); s.set_linewidth(0.7)
+        s.set_visible(True); s.set_edgecolor(ecol); s.set_linewidth(elw)
+        s.set_zorder(8)
+    # step badge, top-left of the panel
+    if SHOW_STEP_LABELS:
+        st = step_for(key)
+        if st is not None:
+            ax.text(0.970, 0.030, f"Step {st}", transform=ax.transAxes,
+                    ha="right", va="bottom", fontsize=9, color="white",
+                    weight="bold", zorder=12,
+                    bbox=dict(boxstyle="round,pad=0.30",
+                              facecolor=(0.10, 0.11, 0.12, 0.85),
+                              edgecolor=(1, 1, 1, 0.55), linewidth=0.6))
 
 # foreground: titles, labels, arrows -----------------------------------------
 fg = fig.add_axes([0, 0, 1, 1]); fg.set_xlim(0, Ltot); fg.set_ylim(0, Htot)
@@ -254,6 +315,17 @@ for xm, yc in arrows:
     fg.annotate("", xy=(xm + half, Y), xytext=(xm - half, Y),
                 arrowprops=dict(arrowstyle="-|>", color=ARROW_C, lw=2.2,
                                 mutation_scale=16, shrinkA=0, shrinkB=0))
+
+# outcome legend, centered in the band between the top regions and Mixed -------
+if SHOW_OUTCOME_FRAMES:
+    lax = fig.add_axes(to_frac(x0, y0 + TOP_H, TOP_W, GAP_V))
+    lax.axis("off")
+    handles = [Patch(facecolor=OUTCOME_C[o], edgecolor="none",
+                     label=OUTCOME_LABEL[o])
+               for o in ("success", "collision", "unreached")]
+    lax.legend(handles=handles, ncol=3, loc="center", frameon=False,
+               fontsize=12.5, handlelength=1.15, handleheight=1.15,
+               columnspacing=1.9)
 
 out_pdf = os.path.join(ROOT, "figures", "exp-q-sim.pdf")
 out_png = os.path.join(ROOT, "figures", "exp-q-sim.png")
