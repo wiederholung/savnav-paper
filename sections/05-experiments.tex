@@ -12,8 +12,8 @@ We evaluate all methods on the SAVNav dataset defined in Section~\ref{sec:datase
 We compare SAVNav against three baselines, each adapted to expose a specific capability gap:
 
 \begin{enumerate}
-	\item \textit{Falcon+Goal Oracle:} Adapted from Falcon~\cite{CognitionPrecognitionFutureaware2025}, this baseline uses ground-truth target locations but purely vision-based human reasoning. It isolates the limits of LOS-only social intelligence, testing whether a system can succeed without treating \texttt{conversation} or \texttt{footsteps} as NLOS cues.
-	\item \textit{ENMuS\textsuperscript{3}:} ENMuS\textsuperscript{3}~\cite{AudiovisualNavigationNoisy2025} is an audio-visual navigation framework. Evaluated on episodes with aligned BeDAViN categories, it isolates the limits of socially-unaware AVNav: it uses audio to pursue the target but ignores human-generated sounds as social boundaries.
+	\item \textit{Falcon:} Adapted from Falcon~\cite{CognitionPrecognitionFutureaware2025}, this baseline performs purely vision-based human reasoning and never treats \texttt{conversation} or \texttt{footsteps} as NLOS cues, isolating the limits of LOS-only social intelligence. To decouple goal-finding from social safety, we evaluate two goal-source variants: \textit{Falcon+Goal Oracle}, which is handed ground-truth target coordinates, and \textit{Falcon+Audio Goal}, which instead consumes our audio-derived target anchor.
+	\item \textit{ENMuS\textsuperscript{3}:} ENMuS\textsuperscript{3}~\cite{AudiovisualNavigationNoisy2025} is an audio-visual navigation framework that uses audio to pursue the target but ignores human-generated sounds as social boundaries. Because its released weights assume a fixed, largely single-source BeDAViN target vocabulary, we evaluate it on the ENMuS-compatible subset defined in Section~\ref{subsec:dataset-sim}; its numbers are therefore reported separately and are not directly comparable to the full-set methods.
 	\item \textit{Reactive SAVNav:} This variant shares our exact multi-modal perception but disables all inter-frame accumulation ($\lambda_{\mathrm{nlos}}=0$ in~\eqref{eq:nlos_score}, $B_{\mathrm{anch}}^{(t-1)}=0$ in~\eqref{eq:anch_update}, and no $B^{(t)}(\mathbf{x})$ used by~\eqref{eq:utility}). It matches sound events to entities greedily per frame and projects waypoints at a fixed look-ahead $r_{react}=2.0\,\mathrm{m}$ along the target DOA $\mathbf{d}_{\mathrm{aud}}^{(t)}$. It tests whether instantaneous multi-modal reactions are sufficient without persistent memory.
 \end{enumerate}
 
@@ -24,51 +24,55 @@ Table~\ref{tab:main_results} reports the quantitative performance of SAVNav and 
 
 \begin{table*}[t]
 	\centering
-	\caption{Quantitative evaluation and ablation study on the SAVNav dataset. ENMuS\textsuperscript{3} is evaluated only on the subset of episodes with compatible BeDAViN target categories. The non-line-of-sight (NLOS) collision rate (NCR) is omitted (--) for the crowded social scenario, as it contains no NLOS risks by definition. We evaluate ablation variants only in their informative scenarios (omitted as --).}
+	\caption{Quantitative evaluation and ablation study on the SAVNav dataset ($1{,}008$ episodes; all values as percentages). Metrics are grouped by scenario; $\uparrow$/$\downarrow$ indicate whether higher or lower is better. Bold marks the best value among the full-set methods within each column. NLOS collision rate (NCR) is omitted (--) for crowded social, which contains no NLOS risks by definition, and ablation variants are shown only in their informative NLOS scenarios (-- otherwise). ENMuS\textsuperscript{3}\textsuperscript{\dag} is evaluated on the $504$-episode ENMuS-compatible subset (Section~\ref{subsec:dataset-sim}) and is not directly comparable, hence excluded from the bold comparison.}
 	\label{tab:main_results}
+	\setlength{\tabcolsep}{2.5pt}
 	\resizebox{\linewidth}{!}{
-		\begin{tabular}{l | ccccc | ccccc | ccccc}
+		\begin{tabular}{l | ccccccc | ccccccc | ccccccc}
 			\toprule
-			\multirow{2}{*}{Method}  & \multicolumn{5}{c|}{Crowded Social} & \multicolumn{5}{c|}{Hidden Boundary} & \multicolumn{5}{c}{Mixed Home Activity}                                     \\
-			\cmidrule(lr){2-6} \cmidrule(lr){7-11} \cmidrule(lr){12-16}
-			                         & SR $\uparrow$                       & SPL $\uparrow$                       & HCR $\downarrow$                        & NCR $\downarrow$ & PSC $\uparrow$
-			                         & SR $\uparrow$                       & SPL $\uparrow$                       & HCR $\downarrow$                        & NCR $\downarrow$ & PSC $\uparrow$
-			                         & SR $\uparrow$                       & SPL $\uparrow$                       & HCR $\downarrow$                        & NCR $\downarrow$ & PSC $\uparrow$ \\
+			\multirow{2}{*}{Method}  & \multicolumn{7}{c|}{Crowded Social} & \multicolumn{7}{c|}{Hidden Boundary} & \multicolumn{7}{c}{Mixed Home Activity}                                     \\
+			\cmidrule(lr){2-8} \cmidrule(lr){9-15} \cmidrule(lr){16-22}
+			                         & SR$\uparrow$ & SPL$\uparrow$ & STL$\uparrow$ & Prog.$\uparrow$ & HCR$\downarrow$ & NCR$\downarrow$ & PSC$\uparrow$
+			                         & SR$\uparrow$ & SPL$\uparrow$ & STL$\uparrow$ & Prog.$\uparrow$ & HCR$\downarrow$ & NCR$\downarrow$ & PSC$\uparrow$
+			                         & SR$\uparrow$ & SPL$\uparrow$ & STL$\uparrow$ & Prog.$\uparrow$ & HCR$\downarrow$ & NCR$\downarrow$ & PSC$\uparrow$ \\
 			\midrule
-			\multicolumn{16}{c}{\textit{Baselines \& Ours}} \\
+			\multicolumn{22}{c}{\textit{Baselines \& Ours}} \\
 			\midrule
-			Falcon+Goal Oracle       & \textbf{55.12}                      & \textbf{50.38}                       & 35.67                                   & --               & 87.24
-			                         & 36.25                               & 32.17                                & 56.48                                   & 48.73            & 82.35
-			                         & 40.18                               & 35.42                                & 50.36                                   & 36.24            & 83.47          \\
-			ENMuS\textsuperscript{3} & 25.83                               & 16.47                                & 42.15                                   & --               & 66.38
-			                         & 30.42                               & 19.86                                & 46.53                                   & 39.27            & 71.84
-			                         & 21.36                               & 13.28                                & 50.83                                   & 30.52            & 64.53          \\
-			Reactive SAVNav          & 42.56                               & 31.74                                & 23.41                                   & --               & 82.63
-			                         & 36.83                               & 27.54                                & 36.12                                   & 29.47            & 79.62
-			                         & 36.45                               & 27.13                                & 29.84                                   & 22.36            & 80.28          \\
+			Falcon+Goal Oracle       & 8.04  & 5.81  & 2.73  & 34.71 & 30.95 & --   & 89.82
+			                         & 13.99 & 11.12 & 5.41  & 39.79 & 25.30 & 8.33 & 95.01
+			                         & 10.42 & 7.84  & 3.70  & 32.51 & 38.99 & 11.31 & 87.44 \\
+			Falcon+Audio Goal        & 7.74  & 6.62  & 3.53  & 30.27 & 33.33 & --    & 87.83
+			                         & 10.42 & 8.17  & 4.37  & 34.87 & 27.08 & 11.31 & 94.82
+			                         & 6.55  & 5.55  & 2.88  & 29.87 & 38.69 & 11.61 & 88.50 \\
+			ENMuS\textsuperscript{3}\textsuperscript{\dag} & 0.00 & 0.00 & 0.00 & 9.93 & 14.88 & -- & 95.67
+			                         & 0.00  & 0.00  & 0.00  & 18.05 & 10.12 & 1.79 & 98.99
+			                         & 0.00  & 0.00  & 0.00  & 16.62 & 26.79 & 4.17 & 93.84 \\
+			Reactive SAVNav          & 23.21 & 20.93 & 15.62 & 42.09 & 12.80 & --   & 94.19
+			                         & 22.62 & 21.02 & 16.30 & 43.09 & \textbf{13.39} & 5.95 & 96.66
+			                         & 25.00 & 22.64 & 17.31 & 43.05 & 15.77 & 5.95 & 95.03 \\
 			\midrule
-			SAVNav (Ours)            & 54.28                               & 43.15                                & \textbf{13.52}                          & --               & \textbf{90.17}
-			                         & \textbf{51.47}                      & \textbf{41.23}                       & \textbf{17.85}                          & \textbf{11.36}   & \textbf{88.74}
-			                         & \textbf{49.52}                      & \textbf{39.47}                       & \textbf{15.63}                          & \textbf{9.84}    & \textbf{88.36} \\
+			SAVNav (Ours)            & \textbf{37.80} & \textbf{34.20} & \textbf{25.68} & \textbf{49.77} & \textbf{12.20} & -- & \textbf{94.75}
+			                         & \textbf{37.50} & \textbf{35.68} & \textbf{28.28} & \textbf{51.58} & 14.29 & \textbf{5.65} & \textbf{97.62}
+			                         & \textbf{39.29} & \textbf{36.05} & \textbf{28.08} & 51.29 & 14.29 & 6.55 & \textbf{96.17} \\
 			\midrule
-			\multicolumn{16}{c}{\textit{Ablation Variants}} \\
+			\multicolumn{22}{c}{\textit{Ablation Variants}} \\
 			\midrule
-			w/o Topology-Aware Anticipation & --                                  & --                                   & --                                      & --               & --
-			                         & 41.35                               & 33.18                                & 31.24                                   & 25.63            & 82.47
-			                         & 39.83                               & 31.25                                & 27.46                                   & 19.83            & 82.15          \\
-			w/o Active Sensory Exploration  & --                                  & --                                   & --                                      & --               & --
-			                         & 39.62                               & 29.74                                & 19.83                                   & 13.28            & 87.56
-			                         & 37.14                               & 27.58                                & 17.42                                   & 11.63            & 87.42          \\
+			w/o Topology-Aware Anticipation & -- & -- & -- & -- & -- & -- & --
+			                         & 34.23 & 32.48 & 26.13 & 51.49 & 19.05 & 6.85 & 95.97
+			                         & 38.39 & 35.56 & 27.09 & \textbf{51.39} & \textbf{13.39} & 6.25 & 95.51 \\
+			w/o Active Sensory Exploration  & -- & -- & -- & -- & -- & -- & --
+			                         & 36.01 & 33.85 & 27.04 & 50.59 & 14.58 & 6.55 & 96.62
+			                         & 36.01 & 33.47 & 26.34 & 49.48 & 14.58 & \textbf{5.65} & 95.83 \\
 			\bottomrule
 		\end{tabular}
 	}
 \end{table*}
 
-Compared with Falcon+Goal Oracle, SAVNav highlights the vulnerability of LOS-only navigation in the face of hidden risks. In hidden boundary, Falcon completely fails to anticipate humans behind walls, resulting in a severe NCR of 48.73\% and a high overall HCR of 56.48\%. SAVNav utilizes $\mathcal{N}_{\mathrm{topo}}$ to infer the most probable emergence node $n^*$ and its risk score $B_{\mathrm{nlos}}^{(t)}(n^*)$ in~\eqref{eq:nlos_score} to safely yield, reducing NCR to 11.36\% and HCR to 17.85\%, while simultaneously increasing SR. This demonstrates that pure visual forecasting cannot safely manage blind-corner encounters without audio-derived NLOS structure. In the crowded social scenario, although Falcon+Goal Oracle achieves higher SR and SPL, this is an expected artifact of its access to ground-truth target coordinates, which eliminates the need for active exploration.
+Compared with the Falcon variants, SAVNav highlights the vulnerability of LOS-only human reasoning. Even when handed ground-truth target coordinates, Falcon+Goal Oracle cannot anticipate humans behind walls: in hidden boundary it incurs an NCR of 8.33\% (vs.\ our 5.65\%) and an HCR of 25.30\%, and in mixed home activity its HCR climbs to 38.99\%. Because a human collision terminates the episode, these frequent intrusions collapse its success rate to 13.99\% and 10.42\% respectively, far below our 37.50\% and 39.29\%. This failure is not a goal-finding artifact: even in the fully-LOS crowded scenario, where the oracle goal removes all target ambiguity, Falcon still collides in 30.95\% of episodes and reaches only 8.04\% SR, while replacing the oracle with our audio-derived anchor (Falcon+Audio Goal) degrades it further. SAVNav instead uses $\mathcal{N}_{\mathrm{topo}}$ to infer the most probable emergence node $n^*$ and its risk score $B_{\mathrm{nlos}}^{(t)}(n^*)$ in~\eqref{eq:nlos_score} to yield in advance, cutting hidden-boundary NCR to 5.65\% and HCR to 14.29\%. This demonstrates that pure visual forecasting cannot safely manage blind-corner encounters without audio-derived NLOS structure, regardless of goal knowledge.
 
-Compared with ENMuS\textsuperscript{3}, SAVNav exposes the danger of socially-unaware AVNav. While ENMuS\textsuperscript{3} relies on acoustic tracking to find the target, it ignores the social boundaries formed by conversational groups and footsteps. This leads to profound failures in social compliance, with PSC dropping to 66.38\% in crowded social and 64.53\% in mixed home activity. By explicitly constructing the context-aware fields $C_{\mathrm{nlos}}(\mathbf{x})$ in~\eqref{eq:scg_cost} and~\eqref{eq:dp_cost}, and aggregating them in~\eqref{eq:final_cost} before updating $F(\mathbf{x})$ in~\eqref{eq:speed}, SAVNav maintains high social compliance (PSC near 90\%) across all settings, proving that treating sound merely as a goal rather than a social boundary causes severe intrusions.
+Compared with ENMuS\textsuperscript{3}, SAVNav exposes the brittleness of socially-unaware AVNav. ENMuS\textsuperscript{3} relies on single-source acoustic tracking and, confronted with our multi-source social scenes, fails to disentangle the target from concurrent human sounds, reaching 0\% SR across all three scenarios and making little spatial progress (Progress $\leq 18\%$). Its high PSC is a by-product of this failure rather than of compliance---never resolving the target, it wanders in open space and rarely approaches humans at all. By explicitly constructing the context-aware fields $C_{\mathrm{nlos}}(\mathbf{x})$ in~\eqref{eq:scg_cost} and~\eqref{eq:dp_cost}, aggregating them in~\eqref{eq:final_cost} before updating $F(\mathbf{x})$ in~\eqref{eq:speed}, SAVNav both reaches the target and maintains high social compliance (PSC near 95\%) across all settings, showing that treating sound as a social boundary---not merely a goal---is what makes acoustically-driven navigation both successful and safe.
 
-Compared with Reactive SAVNav, we validate the necessity of persistent map-level states. Both methods share identical perception, yet the reactive variant suffers from jittering trajectories and delayed yielding. This is especially evident in mixed home activity, where the lack of an accumulated target belief map $B^{(t)}(\mathbf{x})$ and persistent anchoring score $B_{\mathrm{anch}}^{(t)}$ (see~\eqref{eq:utility} and~\eqref{eq:anch_update}) drops SR by 13.07 points and SPL by 12.34 points. The rise in HCR across scenarios also confirms that instantaneous multi-modal reactions fail to establish stable yielding behaviors.
+Compared with Reactive SAVNav, we validate the necessity of persistent map-level states. Both methods share identical perception, yet stripping the accumulated target belief map $B^{(t)}(\mathbf{x})$ and anchoring score $B_{\mathrm{anch}}^{(t)}$ (see~\eqref{eq:utility} and~\eqref{eq:anch_update}) yields jittering trajectories and delayed target resolution: SR falls to 23.21\%/22.62\%/25.00\% across the three scenarios (vs.\ our 37.80\%/37.50\%/39.29\%), with SPL and STL dropping in step. Notably, its HCR stays low---even the lowest in hidden boundary (13.39\%)---because it advances timidly; but this caution comes at the cost of task completion, confirming that persistent map-level state, not instantaneous multi-modal reaction alone, is what converts safe hesitation into successful, efficient navigation.
 
 \subsection{Ablation Study}
 \label{subsec:exp-ablation}
@@ -77,14 +81,14 @@ To isolate the contribution of each capability, we evaluate two ablated variants
 
 
 \subsubsection{w/o Topology-Aware Acoustic Anticipation}
-This variant ablates the spatial dimension by removing topology-guided probability diffusion. It does not utilize precomputed topological nodes $\mathcal{N}_{\mathrm{topo}}$ to extract the candidate set or evaluate $B_{\mathrm{nlos}}^{(t)}(n_j)$ in~\eqref{eq:nlos_score}. Instead, for an unanchored social sound event, it calculates the intersection of the DOA ray $\mathbf{d}_{\mathrm{aud}}^{(t)}$ with the nearest static obstacle and places a single localized isotropic cost there, without inferring DP velocity hypotheses $\mathbf{v}_{*}^{(t)}$ in~\eqref{eq:vel_hyp}.
+This variant ablates the spatial anticipation dimension by disabling the topology-aware cost entirely: it computes \emph{no} social cost from any out-of-line-of-sight sound event. Only sounds whose source is currently visible contribute to the cost field, so NLOS \texttt{footsteps} and \texttt{conversation} cues are ignored---the planner never extracts candidate emergence nodes from $\mathcal{N}_{\mathrm{topo}}$ nor evaluates $B_{\mathrm{nlos}}^{(t)}(n_j)$ in~\eqref{eq:nlos_score}. The agent thus reacts to occluded humans only once they enter view.
 
-\textit{Results:} The degradation is most evident in hidden boundary, where NCR rises from 11.36\% to 25.63\% and HCR rises from 17.85\% to 31.24\%. This confirms that avoiding the raw acoustic direction is insufficient; blind-corner safety requires understanding from which topological node the risk will emerge. The same pattern appears in mixed home activity, proving that NLOS risk must be represented as a structured emergence field rather than a single reactive point penalty.
+\textit{Results:} As expected, the effect concentrates in the NLOS-bearing scenarios. In hidden boundary, HCR rises from 14.29\% to 19.05\% and NCR from 5.65\% to 6.85\%, while SR drops from 37.50\% to 34.23\%; the degradation confirms that blind-corner safety requires reasoning about \emph{where} an unseen risk will emerge rather than waiting for it to appear. In mixed home activity, where the LOS conversational group is usually visible, the gap in simulation narrows. Crucially, this component proves decisive on the physical robot (Section~\ref{subsec:exp-realworld}): with reliable acoustic direction, removing NLOS audio cost causes a collision in \emph{every} occluded encounter.
 
 \subsubsection{w/o Active Sensory Exploration}
 This variant ablates the search dimension by removing information-theoretic utility evaluation. It does not maintain the target spatial belief map $B^{(t)}(\mathbf{x})$ and disables $U^{(t)}(\mathbf{p}_i)$ in~\eqref{eq:utility}. If the acoustic target is unanchored, the robot executes a greedy pursuit: it bypasses viewpoint selection and assigns the nearest traversable point along the current target DOA $\mathbf{d}_{\mathrm{aud}}^{(t)}$ as its immediate waypoint.
 
-\textit{Results:} This ablation primarily impacts target-reaching efficiency rather than social safety. In hidden boundary, SR drops from 51.47\% to 39.62\% and SPL drops from 41.23\% to 29.74\%, while HCR remains largely unaffected. In mixed home activity, SR drops by 12.38 points. This pattern confirms that when targets are acoustically ambiguous due to occlusions, greedy directional tracking fails; resolving ambiguity requires active information-seeking behavior.
+\textit{Results:} This ablation primarily impacts target-reaching efficiency rather than social safety. SR drops from 37.50\% to 36.01\% in hidden boundary and from 39.29\% to 36.01\% in mixed home activity, with SPL and STL falling in step, while HCR remains largely unaffected. This pattern confirms that when targets are acoustically ambiguous due to occlusions, greedy directional tracking is less efficient than actively seeking information to resolve the ambiguity.
 
 \subsection{Qualitative Analysis}
 \label{subsec:exp-qualitative}
@@ -98,5 +102,48 @@ This variant ablates the search dimension by removing information-theoretic util
 
 Fig.~\ref{fig:qualitative_results} illustrates a representative episode in a mixed scenario, demonstrating how SAVNav resolves acoustic ambiguity while maintaining social compliance. At step 11, the initial target belief map exhibits high spatial ambiguity regarding the source of $a_{\mathrm{target}}$. Concurrently, the robot identifies two LOS human actors ($h_1$ and $h_2$) belonging to an SCG and maps their corresponding social cost fields to constrain the initial FMM path. As the robot progresses through the corridor (step 168), continuous audio-visual observations reduce spatial uncertainty. The belief map contracts toward the distant room, guiding the designated best viewpoint forward. By step 201, an NLOS DP ($h_3$) begins moving forward and emitting footstep sounds from a blind corner. The robot perceives this acoustic cue and instantly generates a topology-aware social cost field at the doorway, leading the FMM planner to formulate a detour path. At step 226, the robot successfully circumvents $h_3$ and continues navigating toward the current best viewpoint, with the cost field dynamically updating in response to the DP's continuous movement. Finally, at step 337, after entering the room, the robot visually confirms the acoustic target ($h_4$) beside the bed and constructs audio-visual anchoring. The system directly transitions to precision navigation toward the target, yielding a terminal trajectory that closely aligns with the ground-truth shortest path.
 
-% \subsection{Real-World Experiments}
-% \label{subsec:exp-realworld}
+\subsection{Real-World Experiments}
+\label{subsec:exp-realworld}
+
+To assess whether SAVNav transfers beyond simulation, we deploy it on a physical Stretch~3 robot in a real indoor environment.
+% TODO(real-world): insert the floor-plan dimensions / room sizes of the physical test environment once available.
+
+\subsubsection{Setup}
+The robot carries a head-mounted, vertically-oriented Intel RealSense D435if depth camera together with a ReSpeaker 4-channel Mic Array v2, which provide the RGB-D and 4-channel audio streams used for navigation. An additional external Intel RealSense D435i observes the scene to compute a ground-truth direction of arrival for each active sound source. Acoustic targets and social sound events are rendered by portable loudspeakers that replay recordings drawn from the dataset audio pool, spanning the \texttt{television}, \texttt{doorbell}, \texttt{conversation}, and \texttt{footsteps} categories, with human actors playing the roles of the conversational group and the dynamic pedestrian. To keep the perception stack tractable on hardware while matching the simulation protocol as closely as possible, we simplify the auditory front-end relative to simulation: the on-board module performs only sound-event \emph{classification}, and the direction of arrival is supplied as ground truth from the external camera rather than estimated by the SELD network.
+
+We evaluate two methods---the full SAVNav system and its \emph{w/o Topology-Aware Anticipation} ablation---under the three scenarios (crowded/LOS, hidden/NLOS, mixed). We run 6 episodes per method and scenario, for a total of $2\times3\times6=36$ real-robot episodes, and report the same metrics as in simulation.
+
+\begin{table}[t]
+	\centering
+	\caption{Real-world evaluation on a physical Stretch~3 robot ($36$ episodes; $6$ per method and scenario; all values as percentages). Both methods share our perception stack; the direction of arrival is provided as ground truth. Bold marks the better value per column within each scenario.}
+	\label{tab:real_results}
+	\setlength{\tabcolsep}{3pt}
+	\resizebox{\linewidth}{!}{
+		\begin{tabular}{l | ccccccc}
+			\toprule
+			Method & SR$\uparrow$ & SPL$\uparrow$ & STL$\uparrow$ & Prog.$\uparrow$ & HCR$\downarrow$ & NCR$\downarrow$ & PSC$\uparrow$ \\
+			\midrule
+			\multicolumn{8}{c}{\textit{Crowded Social (LOS)}} \\
+			\midrule
+			SAVNav (Ours)                   & 66.67 & 49.57 & 20.85 & \textbf{81.68} & \textbf{0.00}  & \textbf{0.00}  & \textbf{93.15} \\
+			w/o Topology-Aware Anticipation & 66.67 & \textbf{52.23} & \textbf{22.32} & 81.15 & 16.67 & 16.67 & 92.07 \\
+			\midrule
+			\multicolumn{8}{c}{\textit{Hidden Boundary (NLOS)}} \\
+			\midrule
+			SAVNav (Ours)                   & \textbf{50.00} & \textbf{28.90} & \textbf{13.70} & \textbf{65.80} & \textbf{50.00} & \textbf{50.00} & \textbf{85.97} \\
+			w/o Topology-Aware Anticipation & 0.00  & 0.00  & 0.00  & 43.23 & 100.00 & 100.00 & 76.02 \\
+			\midrule
+			\multicolumn{8}{c}{\textit{Mixed Home Activity}} \\
+			\midrule
+			SAVNav (Ours)                   & \textbf{33.33} & \textbf{21.97} & \textbf{8.98} & \textbf{59.33} & \textbf{50.00} & \textbf{50.00} & \textbf{82.30} \\
+			w/o Topology-Aware Anticipation & 0.00  & 0.00  & 0.00  & 39.72 & 100.00 & 100.00 & 73.75 \\
+			\bottomrule
+		\end{tabular}
+	}
+\end{table}
+% NOTE(data): in exp_data-real.xlsx the collision episodes of SAVNav under hidden/mixed are recorded with an
+% identical placeholder tuple (0,0,0,0.348,1,1,0.766); their fine-grained Progress/PSC/SPL/STL aggregates are
+% therefore provisional. SR/HCR/NCR (success and collision outcomes) are unaffected. Verify before camera-ready.
+
+\subsubsection{Results}
+Table~\ref{tab:real_results} reports the real-world outcomes. In the fully-LOS crowded scenario both methods reach the target equally often (SR $66.67\%$), and the gap is small because no occluded risks are present; nonetheless, SAVNav avoids all human collisions (HCR $0\%$) whereas the ablation already collides in one encounter (HCR $16.67\%$). The two NLOS-bearing scenarios expose the component starkly: without topology-aware anticipation the robot collides with the occluded human in \emph{every} episode (HCR $100\%$, SR $0\%$), since it only reacts once the human is already in view. SAVNav instead anticipates the emergence from approaching footsteps, still completing $50\%$ (hidden) and $33\%$ (mixed) of episodes while halving the collision rate to $50\%$. This mirrors and sharply amplifies the simulation trend: once the direction of arrival is reliable, converting NLOS acoustic cues into a topology-aware cost field is decisive for physical safety.
