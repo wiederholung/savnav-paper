@@ -13,7 +13,7 @@ Boundary = red), while the ablation identity is carried by the ochre method text
               two SUCCESS episodes, each a 3-frame left->right temporal row
                 row 1 : mixed-door  (target: doorbell)
                 row 2 : mixed-tv    (target: television)
-  RIGHT box = Hidden Boundary / w/o Topology-Aware Anticipation, red
+  RIGHT box = Hidden Boundary / w/o Topology-Aware Acoustic Anticipation, red
               one COLLISION episode, a 2-frame top->down temporal column
               (target: doorbell).  The ablation is shown only in its informative
               NLOS scenario, matching Table~\\ref{tab:main_results}; cf.
@@ -42,7 +42,7 @@ import argparse
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Patch
+from matplotlib.patches import FancyBboxPatch, Rectangle
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -111,12 +111,15 @@ H_TALL   = 1000.0                 # tile height
 COL_W    = H_TALL * ar("door1")   # tile width (all frames share the aspect)
 SEQ_GAP  = 92.0                   # horizontal gap inside an Ours row (hosts arrow)
 ROW_GAP  = 88.0                   # vertical gap between the two cell rows (tightened)
-TITLE_H  = 178.0                  # band above a box: scene title + method label
+TITLE_H  = 210.0                  # band above a box: scene title + method label
+                                  # (roomier so the narrow NLOS header -- scene
+                                  # title over a two-line method -- is not cramped)
 SCENE_H  = 52.0                   # band above a row for its "Target: ..." label
-GAP_BOX  = 88.0                   # gap between the Mixed and NLOS boxes (tightened)
+GAP_BOX  = 104.0                  # gap between the Mixed and NLOS boxes; kept
+                                  # tight -- the outcome legend stacks its swatch
+                                  # over a rotated label, so the channel is slim
 BOX_PAD  = 34.0                   # inner padding of an accent box
 MARGIN   = 78.0                   # outer margin
-LEGEND_H = 110.0                  # bottom band for the outcome legend
 
 panels = []   # (key, x, ytop, w, h)
 texts  = []   # dict
@@ -171,13 +174,13 @@ LEFT_W = 3 * COL_W + 2 * SEQ_GAP
 boxes.append(dict(x=lx, y=ly, w=LEFT_W, h=BOX_INNER_H, accent=ACC["mixed"]))
 
 # left box header: scene name (top-left) then method (centered) -- sim style
-add_text("Mixed Home Activity", lx, ly + TITLE_H * 0.24, fs=16,
+add_text("Mixed Home Activity", lx, ly + TITLE_H * 0.20, fs=16,
          color=ACC["mixed"], weight="bold", ha="left")
-add_text("SAVNav (Ours)", lx + LEFT_W / 2, ly + TITLE_H * 0.62, fs=15,
+add_text("SAVNav (Ours)", lx + LEFT_W / 2, ly + TITLE_H * 0.58, fs=15,
          color=OURS_C, weight="bold")
 
 # ===========================================================================
-# RIGHT box : w/o Topology-Aware Anticipation, Hidden Boundary  (1 x 2 tiles)
+# RIGHT box : w/o Topology-Aware Acoustic Anticipation, Hidden Boundary (1x2)
 # ===========================================================================
 rx = lx + LEFT_W + BOX_PAD + GAP_BOX + BOX_PAD
 ry = ly
@@ -194,11 +197,13 @@ varrows.append((rx + COL_W / 2, (y_top_bottom + y_bot_top) / 2))
 RIGHT_W = COL_W
 boxes.append(dict(x=rx, y=ry, w=RIGHT_W, h=BOX_INNER_H, accent=ACC["nlos"]))
 
-# right box header: scene name (top-left) then method (centered) -- sim style
-add_text("Hidden Boundary", rx, ry + TITLE_H * 0.24, fs=16,
-         color=ACC["nlos"], weight="bold", ha="left")
-add_text("w/o Topology-Aware\nAnticipation", rx + RIGHT_W / 2,
-         ry + TITLE_H * 0.74, fs=12, color=ABL_C, weight="bold")
+# right box header: scene name (centered above a narrow column) then method.
+# The NLOS box is a single tile wide, so both lines are centred and the method
+# is set a touch smaller to keep the longer name off the box walls.
+add_text("Hidden Boundary", rx + RIGHT_W / 2, ry + TITLE_H * 0.20, fs=16,
+         color=ACC["nlos"], weight="bold")
+add_text("w/o Topology-Aware\nAcoustic Anticipation", rx + RIGHT_W / 2,
+         ry + TITLE_H * 0.60, fs=11, color=ABL_C, weight="bold")
 # per-episode target label above the ablation column
 add_text("Target: doorbell", rx + RIGHT_W / 2, scene_label_y(0, ry), fs=13,
          color=TARGET_C, weight="bold")
@@ -207,7 +212,7 @@ add_text("Target: doorbell", rx + RIGHT_W / 2, scene_label_y(0, ry), fs=13,
 # Canvas
 # ===========================================================================
 Ltot = rx + RIGHT_W + BOX_PAD + MARGIN
-Htot = ly + BOX_INNER_H + LEGEND_H + MARGIN
+Htot = ly + BOX_INNER_H + MARGIN
 U_PER_IN = 380.0     # match the sim figure so fonts/tiles share the same scale
 fig = plt.figure(figsize=(Ltot / U_PER_IN, Htot / U_PER_IN))
 
@@ -274,16 +279,28 @@ for xc, ym in varrows:
                 arrowprops=dict(arrowstyle="-|>", color=ARROW_C, lw=2.2,
                                 mutation_scale=16, shrinkA=0, shrinkB=0))
 
-# outcome legend, centered in the bottom band --------------------------------
+# outcome legend, drawn by hand in the slim channel between the two boxes: each
+# entry is a rotated label (reading bottom->top) sitting directly *above* its
+# colour swatch, the two entries (Collision over Success) stacked and roughly
+# centred so the channel stays narrow.
 if SHOW_OUTCOME_FRAMES:
-    lax = fig.add_axes(to_frac(MARGIN, ly + BOX_INNER_H, Ltot - 2 * MARGIN,
-                               LEGEND_H))
-    lax.axis("off")
-    handles = [Patch(facecolor=OUTCOME_C[o], edgecolor="none",
-                     label=OUTCOME_LABEL[o]) for o in ("success", "collision")]
-    lax.legend(handles=handles, ncol=2, loc="center", frameon=False,
-               fontsize=12.5, handlelength=1.15, handleheight=1.15,
-               columnspacing=1.9)
+    cx = lx + LEFT_W + BOX_PAD + GAP_BOX / 2   # channel centre x (u)
+    cy = ly + BOX_INNER_H / 2                  # channel mid-height (u, top-down)
+    sw = 42.0                                  # swatch side (u)
+    tgap = 22.0                                # label-bottom -> swatch-top gap (u)
+    y0 = cy - 43.0                             # top edge of the first swatch (u)
+    pitch = 340.0                              # swatch-top -> swatch-top (u)
+    for i, o in enumerate(("collision", "success")):
+        y_sw = y0 + i * pitch
+        fg.add_patch(Rectangle((cx - sw / 2, uy(y_sw + sw)), sw, sw,
+                               facecolor=OUTCOME_C[o], edgecolor="none",
+                               zorder=22))
+        # rotation=90 with ha="center"/va="bottom" centres the rotated label on the
+        # swatch's vertical axis (cx) and rests its bottom edge tgap above the swatch
+        # top, so the label reads bottom->top directly *above* its colour block (in
+        # the figure's own up-direction, not offset to one side).
+        fg.text(cx, uy(y_sw - tgap), OUTCOME_LABEL[o], rotation=90,
+                ha="center", va="bottom", fontsize=12, color=TITLE_C, zorder=22)
 
 out_pdf = os.path.join(ROOT, "figures", "exp-q-real.pdf")
 out_png = os.path.join(ROOT, "figures", "exp-q-real.png")

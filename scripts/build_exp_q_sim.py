@@ -6,7 +6,7 @@ Layout (matches the user's sketch):
   Top-left  = LOS  region : Ours x2 (tall)  over  Falcon x1 + ENMuS3 x1 (wide)
   Top-right = NLOS region : Ours x3 (tall)  over  Falcon x2 + ENMuS3 x1 (wide)
   Bottom    = Mixed region: Ours x3 | w/o Active Sensory Exploration x1 |
-                            w/o Topology-Aware Anticipation x1   (all tall)
+                            w/o Topology-Aware Acoustic Anticipation x1 (all tall)
 
 Alignment guarantees:
   * the two top regions are rendered at EQUAL height (wide row bottom-aligned);
@@ -123,6 +123,11 @@ GAP_REGION = 150.0     # gap between LOS and NLOS
 GAP_V      = 172.0     # gap between top block and Mixed block (holds outcome legend)
 TITLE_H    = 86.0      # band reserved above a region for its title
 METHOD_H   = 58.0      # band reserved above a sub-row for method labels
+MIX_METHOD_H = 88.0    # taller method band for the Mixed row: its scene title
+                       # ("Mixed Home Activity") is wide and reaches into the
+                       # centred "SAVNav (Ours)" label, so the label row is pushed
+                       # down to give the same title->method clearance as the top
+                       # regions (keeps the frame-to-label gap unchanged)
 ROW_GAP    = 34.0      # min gap between the tall sub-row and the wide sub-row
 MARGIN     = 74.0      # outer margin
 
@@ -193,7 +198,7 @@ def build_mixed_region(rx, ry, total_w, groups):
     group_w = [len(keys) * col_w[keys[0]] + (len(keys) - 1) * SEQ_GAP
                for keys, *_ in groups]
     gap = (total_w - sum(group_w)) / (len(groups) - 1)   # justify edge-to-edge
-    y_tall = ry + TITLE_H + METHOD_H
+    y_tall = ry + TITLE_H + MIX_METHOD_H
     x = rx
     for gi, (keys, label, color, fs) in enumerate(groups):
         cw = col_w[keys[0]]
@@ -240,7 +245,7 @@ mix_h = build_mixed_region(
     x0, mix_y, TOP_W,
     [(["mix_ours1", "mix_ours2", "mix_ours3"], "SAVNav (Ours)", OURS_C, 15),
      (["mix_nosearch"], "w/o Active Sensory\nExploration", ABL_C, 12),
-     (["mix_noaudio"],  "w/o Topology-Aware\nAnticipation", ABL_C, 12)],
+     (["mix_noaudio"],  "w/o Topology-Aware\nAcoustic Anticipation", ABL_C, 12)],
 )
 boxes.append(dict(x=x0, y=mix_y, w=TOP_W, h=mix_h, accent=ACC["mixed"],
                   title="Mixed Home Activity"))
