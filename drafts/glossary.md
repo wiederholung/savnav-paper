@@ -67,6 +67,8 @@
 | :------------------------------ | :------ | :----------------------------------------------------------------- |
 | success rate                    | SR      | 成功率（在无碰撞前提下，规定步数内抵达目标周围判定为成功的数据比） |
 | success weighted by path length | SPL     | 考虑路径长度最优性的加权成功率                                     |
+| success weighted by time length | STL     | SPL 的时间维度模拟，以控制步数衡量执行效率，惩罚迟疑或低效执行     |
+| progress                        | -       | episode 结束时缩短的初始测地距离比例（信用部分接近，区分未遂与彻底失败）|
 | human collision rate            | HCR     | 发生人机碰撞的 episode 比例                                        |
 | NLOS collision rate             | NCR     | 视野内人类出现时间短于1秒（突发）导致的避让不及碰撞比例            |
 | personal space compliance       | PSC     | 遵守个人空间规定（全程与人类保持安全距离以上）的时间步比例         |
@@ -99,6 +101,7 @@
 | :------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
 | $\mathcal{W}$                                                  | 连续的三维导航物理环境                                                                                                         |
 | $\mathcal{M}_{\mathrm{nav}}, \mathcal{N}_{\mathrm{topo}}$      | 预加载的二维可行驶网格地图与拓扑节点集合                                                                                       |
+| $\mathcal{D}_{\mathrm{obs}}$ | 预加载静态地图中的障碍物距离场（空间中各点到最近障碍物的距离） |
 | $\mathcal{H}, h_i$                                             | 人类参与者集合及其个体实例 ($h_i \in \mathcal{H}$)。其行为属于 DP 或 SCG                                                       |
 | $\mathcal{O}, o_j$                                             | 静态物理对象集合及其实例 ($o_j \in \mathcal{O}$，如门、电视等对声音有掩蔽/声源作用的物理对象)                                  |
 | $\mathcal{A}, a_k$                                             | 客观发生物理声音事件集合及其实例 ($a_k \in \mathcal{A}$)                                                                       |
@@ -111,10 +114,10 @@
 | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------- |
 | $O^{(t)}$                                         | 时刻 $t$ 接收的多模态观测元组 $(I^{(t)}, D^{(t)}, A^{(t)})$ (注意：为 $O$ 斜体，严禁与物体集合 $\mathcal{O}$ 混淆)                              |
 | $c_{\mathrm{aud}}^{(t)}$                          | 时刻 $t$ 声音类别的预测标签，$c_{\mathrm{aud}}^{(t)} \in \mathcal{L}_{\mathrm{target}} \cup \mathcal{L}_{\mathrm{social}}$                      |
-| $E_{\mathrm{hum}}^{(t)}, E_{\mathrm{aud}}^{(t)}$  | **[感知]** 维护的 Perception Entity：时刻 $t$ 实例化持续追踪的视觉与听觉实体                                                                    |
+| $E_{\mathrm{hum}}^{(t)}, E_{\mathrm{aud}}^{(t)}$  | **[感知]** 维护的 Perception Entity：时刻 $t$ 实例化持续追踪的视觉与听觉实体（$E_{\mathrm{vis}}$ 泛指参与锚定的视觉实体：人类实体 $E_{\mathrm{hum}}$ 或静态物体 $o$）                                                                    |
 | $B_{\mathrm{anch}}^{(t)}(E_{\mathrm{vis}}^{(t)})$ | **[映射]** (取代原 $S_{\mathrm{anch}}$) 刻画时刻 $t$ 实体绑定的锚定置信度状态，采用 $B$ (Belief) 防止与特征相似度 ($s$) 或规划速度场 ($S$) 混淆 |
 | $B_{\mathrm{nlos}}^{(t)}(n_j)$                    | **[映射]** (取代原 $S_{\mathrm{nlos}}$) 维持在拓扑节点上的 NLOS 风险置信度状态                                                                  |
-| $\lambda_{\mathrm{anch}}, \eta_{\mathrm{anch}}$   | 锚定信念或风险置信度更新过程中的自然衰减系数 (decay rate) 与观测更新率 (innovation rate)                                                        |
+| $\lambda_{\mathrm{anch}}, \eta_{\mathrm{anch}}, \lambda_{\mathrm{nlos}}, \eta_{\mathrm{nlos}}$   | 锚定信念（下标 anch）与 NLOS 风险置信度（下标 nlos）更新过程中的自然衰减系数 (decay rate) 与观测更新率 (innovation rate)                                                        |
 | $\tau_{\mathrm{anch}}, \tau_{\mathrm{nlos}}$      | 触发确立锚定关联或激活拓扑节点 NLOS 风险的判定阈值参数                                                                                          |
 
 ### 6.3 Spatial & Geometric Vectors (空间分布与几何特征向量)
@@ -124,9 +127,10 @@
 | $\mathbf{p}_{\mathrm{target}}, \mathbf{p}_{\mathrm{robot}}^{(t)}$                             | 目标真实 3D 位置，以及机器人在时刻 $t$ 的中心位置坐标                                                                       |
 | $\mathbf{p}_{\mathrm{hum}}^{(t)}, \mathbf{p}_{\mathrm{obj}}$                                  | 时刻 $t$ 经深度图投影后获得的人类感知实体的 3D 中心坐标，与静态对象实体的 3D 坐标 (常量)                                    |
 | $\mathbf{v}^{(t)}, \mathbf{v}_*^{(t)}$                                                        | 时刻 $t$ 机器人的底盘偏航/线速度控制指令 (输出)，及推测出的人类动态运动速度假设向量 (hypothesis)                            |
+| $\mathbf{v}_{\mathrm{hum}}^{(t)}$                                                             | 时刻 $t$ 由视觉追踪观测到的 LOS 人类实体真实速度向量（用于锚定实体的 LOS 代价场，区别于假设向量 $\mathbf{v}_*^{(t)}$）      |
 | $v_{\mathrm{walk}}$                                                                           | 标量形式的参考人类步行速率 (静态参考量，用于计算 $\mathbf{v}_*^{(t)}$)                                                      |
 | $\mathbf{d}_{\mathrm{aud}}^{(t)}$                                                             | 时刻 $t$ 声学实体由于到达方向在世界坐标系下算出的方向向量 (DOA vector)                                                      |
-| $\mathbf{e}_{\mathrm{hum}}^{(t)}, \mathbf{e}_{\mathrm{aud}}^{(t)}, \mathbf{e}_{\mathrm{obj}}$ | 经由时刻 $t$ 跨模态表征模型提取的视觉或听觉对象的语义级别嵌入向量 (对于静态物体 $\mathbf{e}_{\mathrm{obj}}$ 为全局给定常数) |
+| $\mathbf{e}_{\mathrm{hum}}^{(t)}, \mathbf{e}_{\mathrm{aud}}^{(t)}, \mathbf{e}_{\mathrm{obj}}$ | 经由时刻 $t$ 跨模态表征模型提取的视觉或听觉对象的语义级别嵌入向量 (对于静态物体 $\mathbf{e}_{\mathrm{obj}}$ 为全局给定常数)；$\mathbf{e}_{\mathrm{vis}}$ 泛指所锚定视觉实体的嵌入（即 $\mathbf{e}_{\mathrm{hum}}$ 或 $\mathbf{e}_{\mathrm{obj}}$） |
 | $s^{(t)}$                                                                                     | 时刻 $t$ 特征端之间的余弦相似度 (cosine similarity，小写斜体独立使用)                                                       |
 | $\sigma_{\mathrm{hum}}^{(t)}, \sigma_{\mathrm{aud}}^{(t)}$                                    | 时刻 $t$ 视觉深度定位带来的空间方差与声音 DOA 定位带来的角度不确定性误差                                                    |
 | $\Delta\theta_{\mathrm{vis}}^{(t)}, \Delta\theta_j^{(t)}$                                     | 时刻 $t$ 视觉实体或拓扑节点相对于机器人的空间方向，与预测声音 DOA 射线之间的角度偏差                                        |
