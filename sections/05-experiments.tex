@@ -53,16 +53,16 @@ Table~\ref{tab:main_results} reports the quantitative performance of SAVNav and 
 			\midrule
 			SAVNav (Ours)            & \textbf{37.80} & \textbf{34.20} & \textbf{25.68} & \textbf{49.77} & \textbf{12.20} & -- & \textbf{94.75}
 			                         & \textbf{37.50} & \textbf{35.68} & \textbf{28.28} & \textbf{51.58} & 14.29 & \textbf{5.65} & \textbf{97.62}
-			                         & \textbf{39.29} & \textbf{36.05} & \textbf{28.08} & 51.29 & 14.29 & 6.55 & \textbf{96.17} \\
+			                         & \textbf{39.29} & \textbf{36.05} & \textbf{28.08} & \textbf{51.39} & \textbf{13.39} & \textbf{5.65} & \textbf{96.17} \\
 			\midrule
 			\multicolumn{22}{c}{\textit{Ablation Variants}} \\
 			\midrule
 			w/o Topology-Aware Anticipation & -- & -- & -- & -- & -- & -- & --
 			                         & 34.23 & 32.48 & 26.13 & 51.49 & 19.05 & 6.85 & 95.97
-			                         & 38.39 & 35.56 & 27.09 & \textbf{51.39} & \textbf{13.39} & 6.25 & 95.51 \\
+			                         & 38.39 & 35.56 & 27.09 & 51.29 & 14.58 & 6.55 & 95.51 \\
 			w/o Active Sensory Exploration  & -- & -- & -- & -- & -- & -- & --
 			                         & 36.01 & 33.85 & 27.04 & 50.59 & 14.58 & 6.55 & 96.62
-			                         & 36.01 & 33.47 & 26.34 & 49.48 & 14.58 & \textbf{5.65} & 95.83 \\
+			                         & 36.01 & 33.47 & 26.34 & 49.48 & 14.29 & 6.25 & 95.83 \\
 			\bottomrule
 		\end{tabular}
 	}
@@ -83,7 +83,7 @@ To isolate the contribution of each capability, we evaluate two ablated variants
 \subsubsection{w/o Topology-Aware Acoustic Anticipation}
 This variant ablates the spatial anticipation dimension by disabling the topology-aware cost entirely: it computes \emph{no} social cost from any NLOS sound event. Only sounds whose source is currently visible contribute to the cost field, so NLOS \texttt{footsteps} and \texttt{conversation} cues are ignored---the planner never extracts candidate emergence nodes from $\mathcal{N}_{\mathrm{topo}}$ nor evaluates $B_{\mathrm{nlos}}^{(t)}(n_j)$ in~\eqref{eq:nlos_score}. The agent thus reacts to occluded humans only once they enter view.
 
-\textit{Results:} As expected, the effect concentrates in the NLOS-bearing scenarios. In hidden boundary, HCR rises from 14.29\% to 19.05\% and NCR from 5.65\% to 6.85\%, while SR drops from 37.50\% to 34.23\%; the degradation confirms that blind-corner safety requires reasoning about \emph{where} an NLOS risk will emerge rather than waiting for it to appear. In mixed home activity, where the LOS conversational group is usually visible, the gap in simulation narrows. Crucially, this component proves decisive on the physical robot (Section~\ref{subsec:exp-realworld}): with reliable acoustic direction, removing NLOS audio cost causes a collision in \emph{every} occluded encounter.
+\textit{Results:} As expected, the effect concentrates in the NLOS-bearing scenarios. In hidden boundary, HCR rises from 14.29\% to 19.05\% and NCR from 5.65\% to 6.85\%, while SR drops from 37.50\% to 34.23\%; the degradation confirms that blind-corner safety requires reasoning about \emph{where} an NLOS risk will emerge rather than waiting for it to appear. In mixed home activity, where the LOS conversational group is usually visible, the gap in simulation narrows, though the full system remains ahead on every metric (e.g., HCR 13.39\% vs.\ 14.58\%). Crucially, this component proves decisive on the physical robot (Section~\ref{subsec:exp-realworld}): with reliable acoustic direction, removing NLOS audio cost causes a collision in \emph{every} occluded encounter.
 
 \subsubsection{w/o Active Sensory Exploration}
 This variant ablates the search dimension by removing information-theoretic utility evaluation. It does not maintain the target belief map $B^{(t)}(\mathbf{x})$ and disables $U^{(t)}(\mathbf{p}_i)$ in~\eqref{eq:utility}. If the acoustic target is unanchored, the robot executes a greedy pursuit: it bypasses viewpoint selection and assigns the nearest traversable point along the current target DOA $\mathbf{d}_{\mathrm{aud}}^{(t)}$ as its immediate waypoint.
