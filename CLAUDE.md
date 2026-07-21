@@ -23,6 +23,7 @@ Manual sequence if needed: `pdflatex main` → `bibtex main` → `pdflatex main`
 - Entry point is [main.tex](main.tex); it `\input`s `templates/ral/head` (document class `IEEEtran[conference]` + package preamble) then the six section files in order.
 - Bibliography is resolved from `ref4ral.bib` (see `\bibliography{ref4ral}` in main.tex). Style: `IEEEtran`.
 - All intermediate files (`*.aux`, `*.bbl`, `*.log`, `*.synctex.gz`, etc.) and the root `main.pdf` are gitignored.
+- Two git remotes: `origin` (GitHub) and `overleaf`. Push to `origin` only; touch `overleaf` only when explicitly asked.
 
 ## Structure
 
@@ -34,16 +35,18 @@ Manual sequence if needed: `pdflatex main` → `bibtex main` → `pdflatex main`
   - `04-dataset.tex` — task setup, entity definitions, Habitat/SoundSpaces simulation, metrics, comparison table.
   - `05-experiments.tex` — metrics, baselines, ablations, results.
   - `06-conclusions.tex` — summary.
-- [figures/](figures/) — each figure ships as a `.pdf` (the form `\includegraphics` references) exported from a same-named `.pptx` source kept alongside it. Edit the `.pptx`, re-export the `.pdf`; the `.png` is a preview.
+- [figures/](figures/) — each figure ships as a `.pdf` (the form `\includegraphics` references), usually exported from a same-named `.pptx` source kept alongside it: edit the `.pptx`, re-export the `.pdf`; the `.png` is a preview. Exception: `exp-q-sim.pdf` and `exp-q-real.pdf` are composed by `scripts/build_exp_q_sim.py` / `scripts/build_exp_q_real.py` from keyframes under `figures/qualitative_exp/` — edit the script or frames and re-run; there is no `.pptx` to export.
 - [drafts/savnav_impl.md](drafts/savnav_impl.md) — method implementation details; the ground-truth reference for what the method actually does.
 - [drafts/glossary.md](drafts/glossary.md) — the single source of truth for terminology, acronyms, and math symbols (see below).
-- [templates/](templates/) — `ral/` (active, IEEEtran conference class) and `rss/` (alternate). `references/` holds source `.tex`/`.md` of key cited works.
+- [templates/](templates/) — `ral/` (active, IEEEtran conference class) and `rss/` (alternate).
+- [references/](references/) — source `.tex`/`.md`/PDFs of key cited works (e.g. Falcon, ENMuS³), at repo root.
 
 ## Hard constraints
 
 These override convenience. Violating them corrupts the paper or the citation graph.
 
 - **Never modify `ref4ral.bib` or `ref4all.bib`.** They are managed externally by Zotero. Only cite existing citekeys; never invent or hallucinate a citation. `ref4ral.bib` (~60 curated refs) is what the paper compiles against; `ref4all.bib` (~160) is the larger pool.
+- **Experimental numbers come only from `drafts/exp_data-sim.md` and `drafts/exp_data-real.md`.** Both are author-verified; the results tables in `05-experiments.tex` must match them exactly. Never recompute, extrapolate, or recall values from any other source.
 - **Never reference anything under `drafts/outdated/` or `figures/outdated/`.** That content is stale.
 - **Terminology and symbols sync to `drafts/glossary.md`.** Register a new term/acronym/symbol there *before* using it in the body. On conflict, the glossary wins and the prose is corrected to match.
 - **Global consistency.** The chain motivation → definition → method → experiment → conclusion must stay aligned. When you change a core setting, term, symbol, or contribution, proactively check and update the other sections (intro ↔ method ↔ dataset ↔ experiments ↔ conclusion), not just the local passage.

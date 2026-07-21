@@ -52,6 +52,7 @@
 - [x] 再过一遍merics
 - [x] 在哪提给定地图合适
 - [x] The navigating agent is modeled after a Stretch 3 robot2, equipped with a forward-facing RGB-D camera and a 4-channel microphone array.
+- [] §IV-A 开头两段（04-dataset.tex L4-L11）用散文体复述了 §III-A Problem Formulation 已形式化的任务定义（两类声音事件、无 GT 人类状态、须推断 NLOS），存在重复。已评估节序（method 前 dataset 后维持现状，理由：method 自包含、dataset 七成内容是评估基础设施、对齐 Falcon 结构），优化方向不是换序，而是把这两段压缩成一两句回指 §III-A 的过渡句，省出篇幅。8页压缩时已处理：删除了 §IV 开头独立引入段，原两段合并压缩成一段（现 04-dataset.tex L7），信息点保留但篇幅大幅缩短；未采用显式回指 §III-A 的过渡句，两节间的语义重复（散文版 vs 形式化版）仍在，只是篇幅问题已解决。
 
 ## method
 

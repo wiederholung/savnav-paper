@@ -1,6 +1,6 @@
 # SAVNav: Socially-Aware Audio Visual Navigation
 
-Version: 1.1.1
+Version: 1.2.0
 
 这是论文 LaTeX 仓库，计划投稿 IEEE Robotics and Automation Letters (RA-L)，结构如下：
 
@@ -82,4 +82,5 @@ Version: 1.1.1
 - 禁止参考 `drafts/outdated/` 下的任何内容。
 - 禁止修改 `*.bib` 文件。
 - 禁止编造引用、实验设定、结果数值或未在全文定义的新术语。
+- 实验数值唯一依据 `drafts/exp_data-sim.md` 与 `drafts/exp_data-real.md`（作者人工校对）；`05-experiments.tex` 中的结果表必须与之完全一致，禁止另行推算或凭记忆填数。
 - 未核对相关章节前，不做可能破坏全文一致性的局部重写。

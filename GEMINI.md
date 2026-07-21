@@ -21,6 +21,7 @@
 ## 3. Operational Constraints
 - **Outdated Content:** NEVER reference files in `drafts/outdated/`.
 - **References:** DO NOT modify `ref4ral.bib` or `ref4all.bib`. Only use existing citekeys; never hallucinate citations.
+- **Experimental Data:** Result numbers come ONLY from `drafts/exp_data-sim.md` and `drafts/exp_data-real.md` (author-verified). The tables in `05-experiments.tex` must match them exactly; never recompute or invent values.
 - **Workflow:** 
     1. **Research:** Identify task depth and check context across sections.
     2. **Strategy:** Explain the problem, impact, and direction before providing text.
