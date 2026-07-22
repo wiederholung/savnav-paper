@@ -36,6 +36,9 @@
 .claude.bak/
 .gemini/
 
+# Python
+__pycache__/
+
 references/
 2RA-L
 drafts/论文浓缩+真机实验设计.pptx

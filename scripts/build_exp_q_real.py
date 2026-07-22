@@ -29,8 +29,12 @@ embedded at full resolution (lossless), never distorted (figure physical aspect
 == u-space aspect).
 
 Terminal keyframes carry an outcome tag in the filename (__success / __collision)
-which drives the coloured outcome border; the two success/collision states are
-the only outcomes in the real set, so the legend has two entries.
+which drives the coloured outcome border.  A frameless legend band spans the
+canvas bottom (shared with the sim figure via exp_q_legend.py): the subset of
+the unified-panel legend that appears in the real-robot maps (social cost /
+target / planned path / robot trajectory / human / robot), followed by the
+outcome key drawn as hollow square frames echoing the outcome border of
+terminal panels.
 
 Faces in the FPV / third-person views are blurred; the per-keyframe step badge is
 parsed from the "_step<NNN>" tag baked into each filename.  Both step badges and
@@ -42,8 +46,10 @@ import argparse
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Rectangle
+from matplotlib.patches import FancyBboxPatch
 from PIL import Image
+
+from exp_q_legend import OUTCOME_C, draw_band
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "figures", "qualitative_exp", "real")
@@ -92,8 +98,8 @@ def step_for(k):
     return int(m.group(1)) if m else None
 
 # ---- outcome per keyframe (parsed from the filename tag) --------------------
-OUTCOME_C = {"success": "#1a9850", "collision": "#d62728"}
-OUTCOME_LABEL = {"success": "Success", "collision": "Collision"}
+# Colours/labels come from exp_q_legend (shared with the sim figure); the real
+# runs only ever end in success or collision.
 def outcome_for(k):
     m = re.search(r"__(success|collision)\.png$", F[k])
     return m.group(1) if m else None
@@ -109,17 +115,19 @@ ACC = {"mixed": "#6d4c9f", "nlos": "#c0392b"}   # scene accents (box + scene tit
 # ---- layout parameters (u-space, top-down: y grows downward) ----------------
 H_TALL   = 1000.0                 # tile height
 COL_W    = H_TALL * ar("door1")   # tile width (all frames share the aspect)
-SEQ_GAP  = 92.0                   # horizontal gap inside an Ours row (hosts arrow)
-ROW_GAP  = 88.0                   # vertical gap between the two cell rows (tightened)
+SEQ_GAP  = 72.0                   # horizontal gap inside an Ours row (hosts arrow)
+ROW_GAP  = 64.0                   # vertical gap between the two cell rows (tightened)
 TITLE_H  = 210.0                  # band above a box: scene title + method label
                                   # (roomier so the narrow NLOS header -- scene
                                   # title over a two-line method -- is not cramped)
 SCENE_H  = 52.0                   # band above a row for its "Target: ..." label
-GAP_BOX  = 104.0                  # gap between the Mixed and NLOS boxes; kept
-                                  # tight -- the outcome legend stacks its swatch
-                                  # over a rotated label, so the channel is slim
+GAP_BOX  = 52.0                   # gap between the Mixed and NLOS box borders;
+                                  # pure clearance now that the legend moved to
+                                  # the bottom band
 BOX_PAD  = 34.0                   # inner padding of an accent box
-MARGIN   = 78.0                   # outer margin
+MARGIN   = 60.0                   # outer margin
+LEG_H    = 170.0                  # bottom legend band height (two legend rows)
+LEG_GAP  = 28.0                   # box border (BOX_PAD bleed) -> legend band
 
 panels = []   # (key, x, ytop, w, h)
 texts  = []   # dict
@@ -212,7 +220,8 @@ add_text("Target: doorbell", rx + RIGHT_W / 2, scene_label_y(0, ry), fs=13,
 # Canvas
 # ===========================================================================
 Ltot = rx + RIGHT_W + BOX_PAD + MARGIN
-Htot = ly + BOX_INNER_H + MARGIN
+leg_y = ly + BOX_INNER_H + BOX_PAD + LEG_GAP   # legend band across the bottom
+Htot = leg_y + LEG_H + 18.0
 U_PER_IN = 380.0     # match the sim figure so fonts/tiles share the same scale
 fig = plt.figure(figsize=(Ltot / U_PER_IN, Htot / U_PER_IN))
 
@@ -279,28 +288,15 @@ for xc, ym in varrows:
                 arrowprops=dict(arrowstyle="-|>", color=ARROW_C, lw=2.2,
                                 mutation_scale=16, shrinkA=0, shrinkB=0))
 
-# outcome legend, drawn by hand in the slim channel between the two boxes: each
-# entry is a rotated label (reading bottom->top) sitting directly *above* its
-# colour swatch, the two entries (Collision over Success) stacked and roughly
-# centred so the channel stays narrow.
-if SHOW_OUTCOME_FRAMES:
-    cx = lx + LEFT_W + BOX_PAD + GAP_BOX / 2   # channel centre x (u)
-    cy = ly + BOX_INNER_H / 2                  # channel mid-height (u, top-down)
-    sw = 42.0                                  # swatch side (u)
-    tgap = 22.0                                # label-bottom -> swatch-top gap (u)
-    y0 = cy - 43.0                             # top edge of the first swatch (u)
-    pitch = 340.0                              # swatch-top -> swatch-top (u)
-    for i, o in enumerate(("collision", "success")):
-        y_sw = y0 + i * pitch
-        fg.add_patch(Rectangle((cx - sw / 2, uy(y_sw + sw)), sw, sw,
-                               facecolor=OUTCOME_C[o], edgecolor="none",
-                               zorder=22))
-        # rotation=90 with ha="center"/va="bottom" centres the rotated label on the
-        # swatch's vertical axis (cx) and rests its bottom edge tgap above the swatch
-        # top, so the label reads bottom->top directly *above* its colour block (in
-        # the figure's own up-direction, not offset to one side).
-        fg.text(cx, uy(y_sw - tgap), OUTCOME_LABEL[o], rotation=90,
-                ha="center", va="bottom", fontsize=12, color=TITLE_C, zorder=22)
+# legend band across the canvas bottom: unified-panel subset present in the
+# real-robot maps + outcome key, shared with the sim figure (exp_q_legend.py).
+# Column-major pairing at ncol=4: (cost,target) (path,traj) (human,robot)
+# (success,collision).
+leg, leg_fs = draw_band(
+    fig, to_frac(0, leg_y, Ltot, LEG_H),
+    ["cost", "target", "path", "traj", "human", "robot"],
+    ("success", "collision") if SHOW_OUTCOME_FRAMES else (),
+    ncol=4)
 
 out_pdf = os.path.join(ROOT, "figures", "exp-q-real.pdf")
 out_png = os.path.join(ROOT, "figures", "exp-q-real.png")
@@ -308,4 +304,5 @@ fig.savefig(out_pdf, dpi=PDF_DPI)
 fig.savefig(out_png, dpi=150)
 print("wrote", out_pdf, "and", out_png)
 print("canvas u:", round(Ltot), "x", round(Htot), " aspect", round(Ltot / Htot, 3))
-print("figsize in:", round(Ltot / U_PER_IN, 2), "x", round(Htot / U_PER_IN, 2))
+print("figsize in:", round(Ltot / U_PER_IN, 2), "x", round(Htot / U_PER_IN, 2),
+      " legend fs:", leg_fs)

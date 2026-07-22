@@ -2,14 +2,25 @@
 """Compose figures/exp-q-sim.pdf : qualitative comparison across the three
 SAVNav scenarios (Crowded Social / Hidden Boundary / Mixed Home Activity).
 
-Layout (matches the user's sketch):
-  Top-left  = LOS  region : Ours x2 (tall)  over  Falcon x1 + ENMuS3 x1 (wide)
-  Top-right = NLOS region : Ours x3 (tall)  over  Falcon x2 + ENMuS3 x1 (wide)
-  Bottom    = Mixed region: Ours x3 | w/o Active Sensory Exploration x1 |
-                            w/o Topology-Aware Acoustic Anticipation x1 (all tall)
+Every source keyframe is a landscape composite (~1080 px tall, aspect 1.9--2.9):
+egocentric + third-person camera views on the left, the unified top-down map
+(social cost field / audio cones / trajectory / plan) on the right.
+
+Layout:
+  Top-left  = LOS  region : Ours x2 (sequence)  over  Falcon x1 | ENMuS3 x1
+  Top-right = NLOS region : Ours x3 (sequence)  over  Falcon x2 | ENMuS3 x1
+  Middle    = Mixed region: Ours x3 | w/o Active Sensory Exploration x1 |
+                            w/o Topology-Aware Acoustic Anticipation x1
+  Bottom    = legend band : unified-panel legend + outcome key (frameless),
+                            spanning the canvas bottom; shared with the real
+                            figure via exp_q_legend.py
+
+Each region shows its acoustic target ("Target: ...") top-right in the title
+band, mirroring the real figure's per-row target labels.
 
 Alignment guarantees:
-  * the two top regions are rendered at EQUAL height (wide row bottom-aligned);
+  * the two top regions are rendered at EQUAL height (baseline row
+    bottom-aligned);
   * the Mixed region spans EXACTLY the combined width of the two top regions
     (its groups are justified edge-to-edge).
 
@@ -20,6 +31,9 @@ Source frames are embedded at full resolution (no downsampling); flate (lossless
 stream compression only.  All geometry is in abstract "u" units, top-down
 (y grows downward), converted to matplotlib bottom-up fractions at render time so
 image aspect ratios are never distorted (figure physical aspect == u-space aspect).
+Panel heights in u are chosen so the physical canvas stays ~10 in wide: fonts are
+in points, so the canvas width fixes the printed text scale (shared with
+build_exp_q_real.py via U_PER_IN).
 """
 import os
 import re
@@ -27,8 +41,12 @@ import argparse
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Rectangle, Patch
+from matplotlib.font_manager import FontProperties
+from matplotlib.patches import FancyBboxPatch
+from matplotlib.textpath import TextPath
 from PIL import Image
+
+from exp_q_legend import OUTCOME_C, draw_band
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "figures", "qualitative_exp", "sim")
@@ -49,11 +67,11 @@ matplotlib.rcParams["font.family"] = "serif"
 matplotlib.rcParams["font.serif"] = ["Times New Roman", "Times", "DejaVu Serif"]
 matplotlib.rcParams["pdf.fonttype"] = 42     # embed TrueType, text stays selectable
 
-# resolution at which the raster panels are embedded into the PDF.  The figure is
-# ~9.8 in wide and is placed at ~7.16 in (\linewidth) in the paper, so on-page dpi
-# = PDF_DPI * 9.8/7.16.  700 -> panels embedded near their source pixel size, crisp
-# enough to zoom into the internal legends/maps on screen.
-PDF_DPI = 700
+# resolution at which the raster panels are embedded into the PDF.  A top panel
+# is ~0.66 in tall on the ~10 in canvas while its source is 1080 px tall, so
+# embedding near source pixel size needs ~1080*380/250 ~= 1650 dpi; below that
+# the maps' internal text blurs on zoom.
+PDF_DPI = 1650
 
 # ---- source frames ----------------------------------------------------------
 # Terminal keyframes carry an outcome tag in the filename (__success / __collision
@@ -74,7 +92,7 @@ F = {
     "mix_ours2":  "mixed-ep3-ours.mp4_000008.687.png",
     "mix_ours3":  "mixed-ep3-ours.mp4_000012.673__success.png",
     "mix_nosearch": "mixed-ep3-ours_no_search.mp4_000019.058__unreached.png",
-    "mix_noaudio":  "mixed-ep3-ours_no_audio_cost.mp4_20260714_004116.962__collision.png",
+    "mix_noaudio":  "mixed-ep3-ours_no_audio_cost.mp4_000008.737__collision.png",
 }
 IMG = {k: Image.open(os.path.join(SRC, v)) for k, v in F.items()}
 def ar(k):  # aspect ratio w/h
@@ -101,26 +119,33 @@ def step_for(k):
     return round(float(m.group(1)) * FPS_SIM) if m else None
 
 # ---- outcome per keyframe (parsed from the filename tag) --------------------
-OUTCOME_C = {"success": "#1a9850", "collision": "#d62728", "unreached": "#f0a020"}
-OUTCOME_LABEL = {"success": "Success", "collision": "Collision",
-                 "unreached": "Not reached"}
+# Colours/labels come from exp_q_legend (shared with the real figure).
 def outcome_for(k):
     m = re.search(r"__(success|collision|unreached)\.png$", F[k])
     return m.group(1) if m else None
 
 # ---- palette ----------------------------------------------------------------
-OURS_C  = "#0b6b3a"   # green  -> our method
-BASE_C  = "#2f3437"   # dark   -> baselines
-ABL_C   = "#b5651d"   # ochre  -> ablations
-TITLE_C = "#111417"
-ARROW_C = "#464b52"   # slate  -> temporal-sequence arrow
+OURS_C   = "#0b6b3a"   # green  -> our method
+BASE_C   = "#2f3437"   # dark   -> baselines
+ABL_C    = "#b5651d"   # ochre  -> ablations
+TITLE_C  = "#111417"
+TARGET_C = "#3f454c"   # slate-grey -> per-region "Target: ..." label (real style)
+ARROW_C  = "#464b52"   # slate  -> temporal-sequence arrow
 ACC = {"los": "#2f6db5", "nlos": "#c0392b", "mixed": "#6d4c9f"}
 
 # ---- layout parameters (u-space) -------------------------------------------
-H_TALL     = 1000.0    # height of a tall (portrait) panel
-SEQ_GAP    = 96.0      # gap between consecutive frames (hosts the sequence arrow)
-GAP_REGION = 150.0     # gap between LOS and NLOS
-GAP_V      = 172.0     # gap between top block and Mixed block (holds outcome legend)
+H_TOP      = 250.0     # panel height of the Ours row in a top region; sized so
+                       # the full canvas lands near 10 in physical width (fonts
+                       # keep the print scale of the previous figure revision)
+SEQ_GAP    = 72.0      # gap between consecutive frames (hosts the sequence arrow)
+GAP_REGION = 100.0     # gap between LOS and NLOS (region boxes bleed 30 u pad
+                       # into it from both sides); == GAP_V for a uniform rhythm
+GAP_V      = 100.0     # gap between top block and Mixed block (pure clearance;
+                       # the legend moved to the bottom band)
+MIX_GAP    = 100.0     # inter-group gap in the Mixed row (same rhythm); the
+                       # Mixed panel height is solved from it, see H_MIX below
+LEG_H      = 170.0     # bottom legend band height (two legend rows, centred)
+LEG_GAP    = 42.0      # Mixed-box border (30 u pad bleed) -> legend band
 TITLE_H    = 86.0      # band reserved above a region for its title
 METHOD_H   = 58.0      # band reserved above a sub-row for method labels
 MIX_METHOD_H = 88.0    # taller method band for the Mixed row: its scene title
@@ -128,8 +153,8 @@ MIX_METHOD_H = 88.0    # taller method band for the Mixed row: its scene title
                        # centred "SAVNav (Ours)" label, so the label row is pushed
                        # down to give the same title->method clearance as the top
                        # regions (keeps the frame-to-label gap unchanged)
-ROW_GAP    = 34.0      # min gap between the tall sub-row and the wide sub-row
-MARGIN     = 74.0      # outer margin
+ROW_GAP    = 28.0      # min gap between the Ours sub-row and the baseline sub-row
+MARGIN     = 62.0      # outer margin
 
 panels = []   # (key, x, ytop, w, h)
 texts  = []   # dict
@@ -148,98 +173,104 @@ def add_arrow(x_mid, y_center):
     arrows.append((x_mid, y_center))
 
 # ---------------------------------------------------------------------------
-def top_region_dims(tall_keys, wide_groups):
+def top_region_dims(ours_keys, base_groups):
     """natural (width, height) of a top region."""
-    N = len(tall_keys)
-    col_w = H_TALL * ar(tall_keys[0])
+    N = len(ours_keys)
+    col_w = H_TOP * ar(ours_keys[0])
     region_w = N * col_w + (N - 1) * SEQ_GAP
-    all_wide = [k for keys, _, _ in wide_groups for k in keys]
-    wide_h = col_w / max(ar(k) for k in all_wide)
-    region_h = TITLE_H + METHOD_H + H_TALL + ROW_GAP + METHOD_H + wide_h
-    return region_w, region_h, col_w, wide_h
+    all_base = [k for keys, _, _ in base_groups for k in keys]
+    base_h = col_w / max(ar(k) for k in all_base)
+    region_h = TITLE_H + METHOD_H + H_TOP + ROW_GAP + METHOD_H + base_h
+    return region_w, region_h, col_w, base_h
 
-# A top region (LOS / NLOS): N tall panels over N wide panels, rendered to a
-# fixed region_h with the wide row bottom-aligned so LOS and NLOS match height.
-def build_top_region(rx, ry, region_h, tall_keys, tall_label, wide_groups):
-    N = len(tall_keys)
-    _, _, col_w, wide_h = top_region_dims(tall_keys, wide_groups)
+# A top region (LOS / NLOS): the Ours sequence over one baseline panel per
+# column, rendered to a fixed region_h with the baseline row bottom-aligned so
+# LOS and NLOS match height.
+def build_top_region(rx, ry, region_h, ours_keys, ours_label, base_groups):
+    N = len(ours_keys)
+    _, _, col_w, base_h = top_region_dims(ours_keys, base_groups)
     region_w = N * col_w + (N - 1) * SEQ_GAP
 
-    # tall row (top)
-    y_tall = ry + TITLE_H + METHOD_H
-    for i, k in enumerate(tall_keys):
+    # Ours row (top)
+    y_ours = ry + TITLE_H + METHOD_H
+    for i, k in enumerate(ours_keys):
         x = rx + i * (col_w + SEQ_GAP)
-        add_img(k, x, y_tall, col_w, H_TALL)
+        add_img(k, x, y_ours, col_w, H_TOP)
         if i > 0:                                   # sequence arrow (Ours x N)
-            add_arrow(x - SEQ_GAP / 2, y_tall + H_TALL * 0.5)
-    add_text(tall_label, rx + region_w / 2, y_tall - METHOD_H * 0.52,
+            add_arrow(x - SEQ_GAP / 2, y_ours + H_TOP * 0.5)
+    add_text(ours_label, rx + region_w / 2, y_ours - METHOD_H * 0.52,
              fs=15, color=OURS_C, weight="bold")
 
-    # wide row (bottom-aligned to region bottom)
-    y_wide = ry + region_h - wide_h
-    y_wlab = y_wide - METHOD_H
+    # baseline row (bottom-aligned to region bottom)
+    y_base = ry + region_h - base_h
+    y_blab = y_base - METHOD_H
     cx = rx
-    for keys, label, color in wide_groups:
+    for keys, label, color in base_groups:
         gw = len(keys) * col_w + (len(keys) - 1) * SEQ_GAP
-        add_text(label, cx + gw / 2, y_wlab + METHOD_H * 0.42,
+        add_text(label, cx + gw / 2, y_blab + METHOD_H * 0.42,
                  fs=13, color=color, weight="bold")
         for j, k in enumerate(keys):
-            w = wide_h * ar(k)
-            add_img(k, cx + (col_w - w) / 2, y_wide, w, wide_h)
+            w = base_h * ar(k)
+            add_img(k, cx + (col_w - w) / 2, y_base, w, base_h)
             if j > 0:                               # sequence arrow (Falcon x2)
-                add_arrow(cx - SEQ_GAP / 2, y_wide + wide_h * 0.5)
+                add_arrow(cx - SEQ_GAP / 2, y_base + base_h * 0.5)
             cx += col_w + SEQ_GAP
     return region_w
 
-# The Mixed region: horizontal groups of tall panels justified to total_w.
+# The Mixed region: horizontal groups of H_MIX-tall panels justified to total_w.
 #   groups : list of (keys, label, color, fontsize)
 def build_mixed_region(rx, ry, total_w, groups):
-    col_w = {g[0][0]: H_TALL * ar(g[0][0]) for g in groups}
+    col_w = {g[0][0]: H_MIX * ar(g[0][0]) for g in groups}
     group_w = [len(keys) * col_w[keys[0]] + (len(keys) - 1) * SEQ_GAP
                for keys, *_ in groups]
     gap = (total_w - sum(group_w)) / (len(groups) - 1)   # justify edge-to-edge
-    y_tall = ry + TITLE_H + MIX_METHOD_H
+    y_row = ry + TITLE_H + MIX_METHOD_H
     x = rx
     for gi, (keys, label, color, fs) in enumerate(groups):
         cw = col_w[keys[0]]
         gw = group_w[gi]
-        add_text(label, x + gw / 2, y_tall - 16,
+        add_text(label, x + gw / 2, y_row - 16,
                  fs=fs, color=color, weight="bold", va="bottom")
         for j, k in enumerate(keys):
-            add_img(k, x, y_tall, cw, H_TALL)
+            add_img(k, x, y_row, cw, H_MIX)
             if j > 0:                               # sequence arrow (Ours x3)
-                add_arrow(x - SEQ_GAP / 2, y_tall + H_TALL * 0.5)
+                add_arrow(x - SEQ_GAP / 2, y_row + H_MIX * 0.5)
             x += cw + SEQ_GAP
         x = x - SEQ_GAP + gap
-    return (y_tall + H_TALL) - ry
+    return (y_row + H_MIX) - ry
 
 # ===========================================================================
 # Place the three regions
 # ===========================================================================
 x0, y0 = MARGIN, MARGIN
 
-LOS_TALL = ["los_ours1", "los_ours2"]
-LOS_WIDE = [(["los_falcon"], "Falcon+Goal Oracle", BASE_C),
+LOS_OURS = ["los_ours1", "los_ours2"]
+LOS_BASE = [(["los_falcon"], "Falcon+Goal Oracle", BASE_C),
             (["los_enmus"],  "ENMuS³", BASE_C)]
-NLOS_TALL = ["nlos_ours1", "nlos_ours2", "nlos_ours3"]
-NLOS_WIDE = [(["nlos_falcon1", "nlos_falcon2"], "Falcon+Goal Oracle", BASE_C),
+NLOS_OURS = ["nlos_ours1", "nlos_ours2", "nlos_ours3"]
+NLOS_BASE = [(["nlos_falcon1", "nlos_falcon2"], "Falcon+Goal Oracle", BASE_C),
              (["nlos_enmus"], "ENMuS³", BASE_C)]
 
-los_w,  los_h_nat,  _, _ = top_region_dims(LOS_TALL, LOS_WIDE)
-nlos_w, nlos_h_nat, _, _ = top_region_dims(NLOS_TALL, NLOS_WIDE)
+los_w,  los_h_nat,  _, _ = top_region_dims(LOS_OURS, LOS_BASE)
+nlos_w, nlos_h_nat, _, _ = top_region_dims(NLOS_OURS, NLOS_BASE)
 TOP_H = max(los_h_nat, nlos_h_nat)               # equal height for both regions
 
-build_top_region(x0, y0, TOP_H, LOS_TALL, "SAVNav (Ours)", LOS_WIDE)
+build_top_region(x0, y0, TOP_H, LOS_OURS, "SAVNav (Ours)", LOS_BASE)
 nlos_x = x0 + los_w + GAP_REGION
-build_top_region(nlos_x, y0, TOP_H, NLOS_TALL, "SAVNav (Ours)", NLOS_WIDE)
+build_top_region(nlos_x, y0, TOP_H, NLOS_OURS, "SAVNav (Ours)", NLOS_BASE)
 
 boxes.append(dict(x=x0, y=y0, w=los_w, h=TOP_H, accent=ACC["los"],
-                  title="Crowded Social"))
+                  title="Crowded Social", target="Target: television"))
 boxes.append(dict(x=nlos_x, y=y0, w=nlos_w, h=TOP_H, accent=ACC["nlos"],
-                  title="Hidden Boundary"))
+                  title="Hidden Boundary", target="Target: doorbell"))
 
 # --- bottom : Mixed spans the full combined width of the two top regions -----
 TOP_W = los_w + GAP_REGION + nlos_w
+# Mixed panel height: instead of fixing it and letting the justify gap absorb
+# the slack (it ballooned to ~280 u), fix the inter-group gap at MIX_GAP and
+# solve the height that makes the five panels fill TOP_W exactly.
+H_MIX = (TOP_W - 2 * MIX_GAP - 2 * SEQ_GAP) / (
+    3 * ar("mix_ours1") + ar("mix_nosearch") + ar("mix_noaudio"))
 mix_y = y0 + TOP_H + GAP_V
 mix_h = build_mixed_region(
     x0, mix_y, TOP_W,
@@ -248,13 +279,14 @@ mix_h = build_mixed_region(
      (["mix_noaudio"],  "w/o Topology-Aware\nAcoustic Anticipation", ABL_C, 12)],
 )
 boxes.append(dict(x=x0, y=mix_y, w=TOP_W, h=mix_h, accent=ACC["mixed"],
-                  title="Mixed Home Activity"))
+                  title="Mixed Home Activity", target="Target: human call"))
 
 # ===========================================================================
 # Canvas
 # ===========================================================================
 Ltot = x0 + TOP_W + MARGIN
-Htot = mix_y + mix_h + MARGIN
+leg_y = mix_y + mix_h + LEG_GAP          # legend band across the canvas bottom
+Htot = leg_y + LEG_H + 18.0
 U_PER_IN = 380.0
 fig = plt.figure(figsize=(Ltot / U_PER_IN, Htot / U_PER_IN))
 
@@ -286,20 +318,20 @@ for key, x, ytop, w, h in panels:
     # outcome border: coloured + thick on terminal frames, subtle grey otherwise
     oc = outcome_for(key)
     if SHOW_OUTCOME_FRAMES and oc:
-        ecol, elw = OUTCOME_C[oc], 3.6
+        ecol, elw = OUTCOME_C[oc], 2.6
     else:
         ecol, elw = "#c3c7cc", 0.7
     for s in ax.spines.values():
         s.set_visible(True); s.set_edgecolor(ecol); s.set_linewidth(elw)
         s.set_zorder(8)
-    # step badge, top-left of the panel
+    # step badge, bottom-right of the panel
     if SHOW_STEP_LABELS:
         st = step_for(key)
         if st is not None:
-            ax.text(0.970, 0.030, f"Step {st}", transform=ax.transAxes,
-                    ha="right", va="bottom", fontsize=9, color="white",
+            ax.text(0.982, 0.045, f"Step {st}", transform=ax.transAxes,
+                    ha="right", va="bottom", fontsize=7.5, color="white",
                     weight="bold", zorder=12,
-                    bbox=dict(boxstyle="round,pad=0.30",
+                    bbox=dict(boxstyle="round,pad=0.26",
                               facecolor=(0.10, 0.11, 0.12, 0.85),
                               edgecolor=(1, 1, 1, 0.55), linewidth=0.6))
 
@@ -309,6 +341,14 @@ fg.axis("off"); fg.set_zorder(20); fg.patch.set_alpha(0)
 for b in boxes:
     fg.text(b["x"] + 4, uy(b["y"] + TITLE_H * 0.46), b["title"], fontsize=17,
             color=b["accent"], weight="bold", ha="left", va="center")
+    # acoustic target of the region's episodes, inline after the title (the
+    # title-band right edge is not safe: the Mixed region's rightmost two-line
+    # ablation label reaches up into it); title width via TextPath ink extents
+    tw = TextPath((0, 0), b["title"], size=17,
+                  prop=FontProperties(family="serif", weight="bold")
+                  ).get_extents().width * (U_PER_IN / 72.0)
+    fg.text(b["x"] + 4 + tw + 52, uy(b["y"] + TITLE_H * 0.46), b["target"],
+            fontsize=13, color=TARGET_C, weight="bold", ha="left", va="center")
 for t in texts:
     if not t["s"]:
         continue
@@ -321,16 +361,17 @@ for xm, yc in arrows:
                 arrowprops=dict(arrowstyle="-|>", color=ARROW_C, lw=2.2,
                                 mutation_scale=16, shrinkA=0, shrinkB=0))
 
-# outcome legend, centered in the band between the top regions and Mixed -------
-if SHOW_OUTCOME_FRAMES:
-    lax = fig.add_axes(to_frac(x0, y0 + TOP_H, TOP_W, GAP_V))
-    lax.axis("off")
-    handles = [Patch(facecolor=OUTCOME_C[o], edgecolor="none",
-                     label=OUTCOME_LABEL[o])
-               for o in ("success", "collision", "unreached")]
-    lax.legend(handles=handles, ncol=3, loc="center", frameon=False,
-               fontsize=12.5, handlelength=1.15, handleheight=1.15,
-               columnspacing=1.9)
+# ===========================================================================
+# Legend band across the canvas bottom: unified-panel entries + outcome key,
+# shared with the real figure (see exp_q_legend.py).  Column-major pairing at
+# ncol=6: (cost fields) (audio evidence) (planning intent) ... (outcomes).
+# ===========================================================================
+leg, leg_fs = draw_band(
+    fig, to_frac(0, leg_y, Ltot, LEG_H),
+    ["cost", "belief", "anchored", "nlos_node", "target_bv",
+     "path", "traj", "human", "robot"],
+    ("success", "collision", "unreached") if SHOW_OUTCOME_FRAMES else (),
+    ncol=6)
 
 out_pdf = os.path.join(ROOT, "figures", "exp-q-sim.pdf")
 out_png = os.path.join(ROOT, "figures", "exp-q-sim.png")
@@ -340,4 +381,4 @@ print("wrote", out_pdf, "and", out_png)
 print("canvas u:", round(Ltot), "x", round(Htot), " aspect", round(Ltot / Htot, 3))
 print("figsize in:", round(Ltot / U_PER_IN, 2), "x", round(Htot / U_PER_IN, 2))
 print("TOP_W:", round(TOP_W), " mixed_w:", round(TOP_W),
-      " los_h==nlos_h:", round(TOP_H))
+      " los_h==nlos_h:", round(TOP_H), " legend fs:", leg_fs)
