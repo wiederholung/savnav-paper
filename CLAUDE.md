@@ -35,7 +35,7 @@ Manual sequence if needed: `pdflatex main` → `bibtex main` → `pdflatex main`
   - `04-dataset.tex` — task setup, entity definitions, Habitat/SoundSpaces simulation, metrics, comparison table.
   - `05-experiments.tex` — metrics, baselines, ablations, results.
   - `06-conclusions.tex` — summary.
-- [figures/](figures/) — each figure ships as a `.pdf` (the form `\includegraphics` references), usually exported from a same-named `.pptx` source kept alongside it: edit the `.pptx`, re-export the `.pdf`; the `.png` is a preview. Exception: `exp-q-sim.pdf` and `exp-q-real.pdf` are composed by `scripts/build_exp_q_sim.py` / `scripts/build_exp_q_real.py` from keyframes under `figures/qualitative_exp/` — edit the script or frames and re-run; there is no `.pptx` to export.
+- [figures/](figures/) — each figure ships as a `.pdf` (the form `\includegraphics` references), usually exported from a same-named `.pptx` source kept alongside it: edit the `.pptx`, re-export the `.pdf`; the `.png` is a preview. Exception: `exp-q-sim.pdf` and `exp-q-real.pdf` are composed by `scripts/build_exp_q_sim.py` / `scripts/build_exp_q_real.py` from keyframes under `figures/qualitative_exp/`, and `scene.pdf` by `scripts/build_scene.py` from frames under `figures/demo_dataset/` — edit the script or frames and re-run; no `.pptx` export is involved (`scene.pptx` is the outdated pre-2026-07 source, kept only for history).
 - [drafts/savnav_impl.md](drafts/savnav_impl.md) — method implementation details; the ground-truth reference for what the method actually does.
 - [drafts/glossary.md](drafts/glossary.md) — the single source of truth for terminology, acronyms, and math symbols (see below).
 - [templates/](templates/) — `ral/` (active, IEEEtran conference class) and `rss/` (alternate).
